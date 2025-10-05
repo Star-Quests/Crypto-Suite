@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Crypto Suite • Trade Calculator + Journal</title>
+
+  <!-- Decimal.js for high-precision math -->
+  <script src="https://cdn.jsdelivr.net/npm/decimal.js@10/decimal.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#071726;
+      --panel:#0b1220;
+      --card:#0f1724;
+      --muted:#94a3b8;
+      --accent:#10b981; /* green accent for profit */
+      --accent-red:#ef4444;
+      --glass: rgba(255,255,255,0.03);
+      --text:#e6eef6;
+      --glass-2: rgba(255,255,255,0.02);
+      --accent-2:#06b6d4;
+      --glass-border: rgba(255,255,255,0.04);
+      --shadow: 0 8px 28px rgba(0,0,0,0.6);
+    }
+    *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#061026 0%, #071726 100%);color:var(--text);-webkit-font-smoothing:antialiased;}
+    /* Top bar */
+    header.appbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.03);position:sticky;top:0;background:linear-gradient(180deg, rgba(7,17,38,0.9), rgba(7,17,38,0.6));backdrop-filter: blur(4px);z-index:30}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.1rem;color:var(--accent-2)}
+    .brand .logo{font-size:1.4rem}
+    .hamburger{width:42px;height:42px;border-radius:10px;background:var(--panel);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;cursor:pointer}
+    /* Layout */
+    .app{display:grid;grid-template-columns: 260px 1fr;gap:18px;padding:18px;max-width:1200px;margin:18px auto;}
+    @media (max-width:980px){.app{grid-template-columns: 1fr;padding:12px;margin:0}}
+    /* Sidebar nav */
+    nav.sidebar{background:var(--panel);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--glass-border);box-shadow:var(--shadow)}
+    nav .nav-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;color:var(--muted);font-weight:600}
+    nav .nav-item.active{background:linear-gradient(90deg, rgba(16,185,129,0.08), rgba(6,182,212,0.04));color:var(--text);box-shadow:0 6px 18px rgba(6,182,212,0.02)}
+    nav .small-muted{color:var(--muted);font-size:0.86rem;margin-top:8px}
+    /* Main content containers */
+    .panel{background:var(--card);padding:16px;border-radius:14px;border:1px solid var(--glass-border);box-shadow:var(--shadow)}
+    .grid-2 {display:grid;grid-template-columns:1fr 420px;gap:18px}
+    @media (max-width:1100px){.grid-2{grid-template-columns:1fr}}
+    h2{margin:0 0 8px 0}
+    .muted{color:var(--muted);font-size:0.92rem}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    input,select,textarea,button{font-family:inherit}
+    input,select,textarea{padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:var(--glass);color:var(--text);width:100%}
+    textarea{min-height:120px;resize:vertical}
+    button{padding:10px 12px;border-radius:10px;border:0;background:var(--accent-2);color:#022;cursor:pointer;font-weight:700}
+    button.alt{background:var(--accent)}
+    button.warn{background:var(--accent-red);color:white}
+    .card-sm{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:10px;border:1px solid var(--glass-border)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.92rem}
+    th{color:var(--muted);text-align:left}
+    .positive{color:var(--accent);font-weight:700}
+    .negative{color:var(--accent-red);font-weight:700}
+    .tiny{font-size:0.82rem;color:var(--muted)}
+    .divider{height:1px;background:var(--glass-border);margin:12px 0;border-radius:2px}
+    .result-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0}
+    .footer{text-align:center;color:var(--muted);margin-top:18px}
+    /* Floating mobile nav */
+    .mobile-nav{display:none}
+    @media(max-width:980px){nav.sidebar{display:none}.mobile-nav{display:flex;gap:8px;padding:8px;background:transparent}}
+    /* Toast */
+    .toast{position:fixed;right:16px;bottom:20px;background:var(--panel);padding:10px 14px;border-radius:10px;border-left:4px solid var(--accent-2);box-shadow:0 8px 20px rgba(0,0,0,0.6);display:flex;gap:8px;align-items:center;opacity:0;transform:translateY(20px);transition:all .28s ease;z-index:60}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .small-btn{padding:8px 10px;border-radius:8px;background:var(--glass);border:1px solid var(--glass-border);cursor:pointer}
+    /* responsive tweaks for table on tiny screens */
+    @media (max-width:560px){
+      th:nth-child(4), td:nth-child(4),
+      th:nth-child(6), td:nth-child(6),
+      th:nth-child(7), td:nth-child(7) {display:none}
+    }
+    /* subtle animations */
+    .fade-in{animation:fadeIn .35s ease both}
+    @keyframes fadeIn {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <header class="appbar">
+    <div class="brand">
+      <span class="logo">📊</span>
+      Crypto Suite — Trade • Calc • Journal
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="mobile-nav">
+        <button id="mDashboard" class="small-btn">🏠</button>
+        <button id="mCalc" class="small-btn">🧮</button>
+        <button id="mJournal" class="small-btn">📓</button>
+      </div>
+
+      <div id="hamb" class="hamburger" title="Open menu">☰</div>
+    </div>
+  </header>
+
+  <main class="app">
+    <!-- Sidebar nav -->
+    <nav class="sidebar panel fade-in" id="sidebar">
+      <div id="navDashboard" class="nav-item active">🏠 Dashboard</div>
+      <div id="navCalculator" class="nav-item">🧮 Crypto Calculator</div>
+      <div id="navTradeCalc" class="nav-item">💹 Trade Planner</div>
+      <div id="navJournal" class="nav-item">📓 Journal & Receipts</div>
+      <div id="navSettings" class="nav-item">⚙️ Settings</div>
+      <div class="divider"></div>
+      <div class="small-muted">Tip: use the top hamburger on mobile to switch views.</div>
+    </nav>
+
+    <!-- Main content area -->
+    <section>
+      <!-- Dashboard -->
+      <div id="viewDashboard" class="panel fade-in">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <div>
+            <h2>🏠 Dashboard</h2>
+            <div class="muted">Quick summary of your journal & positions</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="exportAll" class="small-btn">📤 Export JSON</button>
+            <button id="importDataBtn" class="small-btn">📥 Import</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid-2">
+          <!-- Left: Overview -->
+          <div>
+            <div class="card-sm">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div class="tiny">Realized P/L</div>
+                  <div id="dashRealized" class="positive">0 USDT</div>
+                </div>
+                <div>
+                  <div class="tiny">Total Fees</div>
+                  <div id="dashFees" class="muted">0 USDT</div>
+                </div>
+                <div>
+                  <div class="tiny">Open Position</div>
+                  <div id="dashOpen" class="muted">0 ETH</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:14px" class="panel">
+              <h3>📈 Transactions</h3>
+              <div class="divider"></div>
+              <div style="max-height:360px;overflow:auto">
+                <table id="txTable">
+                  <thead><tr><th>Date</th><th>Pair</th><th>Dir</th><th>Qty</th><th>Price</th><th>Order</th><th>P/L</th><th></th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Quick calculators -->
+          <aside>
+            <div class="panel">
+              <h3>🧾 Quick Calc • Exact Balance</h3>
+              <div class="muted tiny">Enter units & current rate → exact USD balance of that holding</div>
+              <div style="margin-top:10px">
+                <label class="tiny">Asset</label>
+                <select id="quickAsset">
+                  <option>ETH</option><option>BTC</option><option>SOL</option><option>USDT</option>
+                </select>
+                <label class="tiny" style="margin-top:8px">Units (e.g. 0.25)</label>
+                <input id="quickUnits" placeholder="units (e.g. 0.5)" type="number" step="any" />
+                <label class="tiny" style="margin-top:8px">Current Rate (USD)</label>
+                <input id="quickRate" placeholder="e.g. 1900" type="number" step="any" />
+                <div style="display:flex;gap:8px;margin-top:10px">
+                  <button id="calcBalance" class="alt">🧾 Calculate Balance</button>
+                  <button id="calcPricePump" class="">📈 Required Pump</button>
+                </div>
+
+                <div id="quickResult" style="margin-top:12px;display:none">
+                  <div class="result-row"><div class="tiny">Balance</div><div id="quickBalance" class="muted">—</div></div>
+                  <div class="result-row"><div class="tiny">If you want profit</div><div id="quickPumpInfo" class="muted">—</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="panel">
+              <h3>🔢 Profit Target Planner</h3>
+              <div class="muted tiny">Want to make $X from an account of $Y? See price change required for the selected asset.</div>
+              <label class="tiny" style="margin-top:8px">Account Balance (USD)</label>
+              <input id="accBalance" placeholder="e.g. 1000" type="number" step="any" />
+              <label class="tiny" style="margin-top:8px">Allocate % to this Asset</label>
+              <input id="allocPct" placeholder="e.g. 100 for full balance" type="number" step="any" value="100" />
+              <label class="tiny" style="margin-top:8px">Asset Current Price (USD)</label>
+              <input id="assetPrice" placeholder="current price e.g. 1900" type="number" step="any" />
+              <label class="tiny" style="margin-top:8px">Desired Profit (USD)</label>
+              <input id="desiredProfit" placeholder="e.g. 55" type="number" step="any" />
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button id="calcPumpFromAccount" class="alt">🔍 Calculate</button>
+                <button id="calcUnitsFromAccount" class="">➡️ Show Units Held</button>
+              </div>
+
+              <div id="pumpResult" style="margin-top:12px;display:none">
+                <div class="result-row"><div class="tiny">Units Held</div><div id="p_units" class="muted">—</div></div>
+                <div class="result-row"><div class="tiny">Needed Price Increase (per unit)</div><div id="p_abs" class="muted">—</div></div>
+                <div class="result-row"><div class="tiny">Needed % Pump</div><div id="p_pct" class="muted">—</div></div>
+                <div class="result-row"><div class="tiny">New Price Target</div><div id="p_new" class="muted">—</div></div>
+              </div>
+            </div>
+
+          </aside>
+        </div>
+      </div>
+
+      <!-- Calculator view -->
+      <div id="viewCalculator" class="panel" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h2>🧮 Crypto Calculator</h2>
+            <div class="muted">Precise balance, conversion and required-pump calculators — works with unit or invested amount.</div>
+          </div>
+          <div>
+            <button id="backToDash" class="small-btn">← Back</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid-2">
+          <div>
+            <div class="panel">
+              <h3>📌 Balance by Units</h3>
+              <label class="tiny">Asset</label>
+              <select id="calcAsset1"><option>ETH</option><option>BTC</option><option>SOL</option><option>USDT</option></select>
+              <label class="tiny" style="margin-top:8px">Units</label>
+              <input id="calcUnits1" type="number" step="any" placeholder="units (e.g. 0.5)">
+              <label class="tiny" style="margin-top:8px">Current Rate (USD)</label>
+              <input id="calcRate1" type="number" step="any" placeholder="e.g. 1900">
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button id="calcBtn1" class="alt">🧾 Compute Exact Balance</button>
+                <button id="calcTarget1" class="">🎯 How much price must rise for $ profit?</button>
+              </div>
+
+              <div id="calcRes1" style="margin-top:12px;display:none">
+                <div class="result-row"><div class="tiny">Balance</div><div id="r_balance" class="muted">—</div></div>
+                <div class="result-row"><div class="tiny">To make profit ($)</div><div><input id="r_profit_input" placeholder="enter desired profit" type="number" step="any" /></div></div>
+                <div class="result-row"><div class="tiny">Required $ increase / unit</div><div id="r_req_abs" class="muted">—</div></div>
+                <div class="result-row"><div class="tiny">Required % increase</div><div id="r_req_pct" class="muted">—</div></div>
+                <div class="result-row"><div class="tiny">New Price Target</div><div id="r_req_new" class="muted">—</div></div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="panel">
+              <h3>💱 Balance from Invested USD</h3>
+              <label class="tiny">Asset</label>
+              <select id="calcAsset2"><option>ETH</option><option>BTC</option><option>SOL</option></select>
+              <label class="tiny" style="margin-top:8px">Invested (USD)</label>
+              <input id="invested" type="number" step="any" placeholder="e.g. 1000">
+              <label class="tiny" style="margin-top:8px">Current Asset Price</label>
+              <input id="investPrice" type="number" step="any" placeholder="e.g. 1900">
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button id="calcUnitsFromInvest" class="alt">🔢 Compute Units & Balance</button>
+              </div>
+
+              <div id="investRes" style="margin-top:12px;display:none">
+                <div class="result-row"><div class="tiny">Units Bought</div><div id="i_units" class="muted">—</div></div>
+                <div class="result-row"><div class="tiny">Exact Balance (USD)</div><div id="i_balance" class="muted">—</div></div>
+              </div>
+            </div>
+          </div>
+
+          <aside>
+            <div class="panel">
+              <h3>ℹ️ How it works</h3>
+              <div class="muted tiny">
+                • If you input units and current rate, balance = units × rate.<br>
+                • To compute required pump: required increase per unit = desired_profit ÷ units (then % = increase ÷ current_rate ×100).<br>
+                • If you input invested USD, units = invested ÷ current_rate.
+              </div>
+              <div class="divider"></div>
+              <div class="muted tiny">All calculations use high-precision arithmetic to avoid rounding errors. Positive results are shown in green, negatives in red. Emojis help you quickly scan results. ✅</div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- Trade Planner view -->
+      <div id="viewTradeCalc" class="panel" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h2>💹 Trade Planner (TP / SL / Trailing)</h2>
+            <div class="muted">Plan entry, take-profit, stop-loss and trailing stops.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:18px">
+          <div class="panel">
+            <h3>🔧 Trade Inputs</h3>
+            <label class="tiny">Asset</label>
+            <select id="tAsset"><option>ETH</option><option>BTC</option><option>SOL</option></select>
+            <label class="tiny" style="margin-top:8px">Entry Price (USD)</label>
+            <input id="tEntry" type="number" step="any" placeholder="e.g. 1900">
+            <label class="tiny" style="margin-top:8px">Amount (units)</label>
+            <input id="tAmount" type="number" step="any" placeholder="e.g. 0.5">
+            <label class="tiny" style="margin-top:8px">Target Profit ($)</label>
+            <input id="tProfit" type="number" step="any" placeholder="e.g. 100">
+            <label class="tiny" style="margin-top:8px">Max Capital Loss ($)</label>
+            <input id="tLoss" type="number" step="any" placeholder="e.g. 50" value="100">
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button id="tCalc" class="alt">🧾 Calculate TP/SL</button>
+              <button id="tCalcTrail" class="">🔁 Trailing Mode</button>
+            </div>
+
+            <div id="tResult" style="margin-top:12px;display:none">
+              <div class="result-row"><div class="tiny">Capital</div><div id="t_cap" class="muted">—</div></div>
+              <div class="result-row"><div class="tiny">Take Profit Price</div><div id="t_tp" class="muted">—</div></div>
+              <div class="result-row"><div class="tiny">Stop Loss Price</div><div id="t_sl" class="muted">—</div></div>
+              <div class="result-row"><div class="tiny">Potential Profit</div><div id="t_pot" class="muted">—</div></div>
+              <div class="result-row"><div class="tiny">Potential Loss</div><div id="t_potloss" class="muted">—</div></div>
+              <div class="result-row"><div class="tiny">ROI</div><div id="t_roi" class="muted">—</div></div>
+              <div class="result-row"><div class="tiny">Risk/Reward</div><div id="t_rr" class="muted">—</div></div>
+            </div>
+          </div>
+
+          <aside class="panel">
+            <h3>🔁 Trailing Stop</h3>
+            <label class="tiny">Trailing Distance ($)</label>
+            <input id="trailDist" type="number" step="any" placeholder="distance in $ (e.g. 200)">
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button id="applyTrail" class="alt">Apply</button>
+              <button id="clearTrail" class="warn">Clear</button>
+            </div>
+            <div id="trailInfo" style="margin-top:12px;display:none">
+              <div class="result-row"><div class="tiny">Trailing Stop Price</div><div id="ti_stop" class="muted">—</div></div>
+              <div class="result-row"><div class="tiny">Secured Profit</div><div id="ti_sec" class="muted">—</div></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- Journal view -->
+      <div id="viewJournal" class="panel" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h2>📓 Journal & Receipts</h2>
+            <div class="muted">Paste receipts, parse, save transactions. Uses FIFO/LIFO matching and high precision arithmetic.</div>
+          </div>
+          <div>
+            <button id="clearAll" class="warn">🧹 Reset Data</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="display:grid;grid-template-columns: 1fr 360px; gap:18px">
+          <!-- Left: receipts & table -->
+          <div>
+            <div class="panel">
+              <h3>📥 Paste Receipt</h3>
+              <textarea id="receiptInput" placeholder="Paste exchange receipt (buy/sell) text here..."></textarea>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <select id="defaultAsset"><option>ETH</option><option>BTC</option><option>SOL</option></select>
+                <button id="parseBtn" class="">🔍 Parse</button>
+                <button id="saveParsed" class="alt">💾 Save</button>
+                <button id="clearReceipt" class="small-btn">✖️ Clear</button>
+              </div>
+
+              <div id="parsePreview" style="margin-top:10px;display:none" class="card-sm">
+                <div id="previewList"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="panel">
+              <h3>📋 Transactions</h3>
+              <div style="max-height:340px;overflow:auto">
+                <table id="txTable2">
+                  <thead><tr><th>Date</th><th>Pair</th><th>Dir</th><th>Qty</th><th>Price</th><th>Order</th><th>Fee</th><th>P/L</th><th></th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button id="exportCsv2" class="small-btn">📊 Export CSV</button>
+                <button id="exportJson2" class="small-btn">💾 Export JSON</button>
+                <button id="importBtn2" class="small-btn">📤 Import</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: settings & dashboard -->
+          <aside>
+            <div class="panel">
+              <h3>⚙️ Settings</h3>
+              <label class="tiny">Matching Method</label>
+              <select id="matchingMode">
+                <option value="fifo">FIFO</option>
+                <option value="lifo">LIFO</option>
+              </select>
+
+              <label class="tiny" style="margin-top:8px">Quote Currency</label>
+              <select id="quoteCurrency"><option>USDT</option><option>USD</option><option>USDC</option></select>
+
+              <div style="margin-top:10px" class="muted tiny">Parsed transactions are stored in localStorage for privacy. Export to backup.</div>
+            </div>
+
+            <div style="margin-top:12px" class="panel">
+              <h3>📊 Mini Dashboard</h3>
+              <div class="card-sm">
+                <div class="tiny">Realized P/L</div><div id="miniReal" class="positive">0</div>
+                <div class="tiny" style="margin-top:6px">Open Position</div><div id="miniOpen" class="muted">0</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- Settings view -->
+      <div id="viewSettings" class="panel" style="display:none">
+        <h2>⚙️ Settings</h2>
+        <div class="muted tiny">Customize app preferences</div>
+        <div class="divider"></div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div class="card-sm">
+            <div class="tiny">Theme</div>
+            <div style="margin-top:8px">
+              <button id="themeDefault" class="small-btn">Dark (default)</button>
+              <button id="themeAlt" class="small-btn">High Contrast</button>
+            </div>
+          </div>
+
+          <div class="card-sm">
+            <div class="tiny">Storage</div>
+            <div style="margin-top:8px">
+              <button id="backupBtn" class="small-btn">💾 Backup Data</button>
+              <button id="clearStorage" class="small-btn">🗑️ Clear Local Storage</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">Made for smart traders • Green = profit ✅ • Red = loss ❌ • Emoji-friendly ✨</div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"><div id="toastMsg"></div></div>
+
+  <script>
+  /*************************************************************************
+   * Crypto Suite
+   * Single-file app combining:
+   *  - Journal (receipt parsing, FIFO/LIFO matching, CSV/JSON export)
+   *  - Crypto calculators (balance, required pump)
+   *  - Trade Planner (TP/SL, trailing)
+   *
+   * Notes:
+   *  - Uses Decimal.js for high precision arithmetic
+   *  - Stores data in localStorage under KEY
+   *************************************************************************/
+
+  const KEY = 'crypto_suite_v1';
+
+  // ---------- Utilities ----------
+  function D(v){ try { return new Decimal(v || 0); } catch(e) { return new Decimal(0); } }
+  function fmt(v, d=8){
+    try {
+      const n = typeof v === 'string' ? parseFloat(v) : (v instanceof Decimal ? v.toNumber() : Number(v));
+      if(isNaN(n)) return '0';
+      return new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:d}).format(n);
+    } catch(e) { return String(v); }
+  }
+  function showToast(msg, ms=2200){
+    const t = document.getElementById('toast'), m = document.getElementById('toastMsg');
+    m.textContent = msg; t.classList.add('show');
+    setTimeout(()=> t.classList.remove('show'), ms);
+  }
+  function uid(prefix='id'){return prefix+'_'+Math.random().toString(36).slice(2,9)+'_'+Date.now().toString(36)}
+
+  // ---------- App state ----------
+  let store = { transactions: [], buysRemaining: [], settings: { matchingMode:'fifo', quoteCurrency:'USDT' } };
+
+  function saveStore(){ localStorage.setItem(KEY, JSON.stringify(store)); }
+  function loadStore(){
+    const s = localStorage.getItem(KEY);
+    if(!s) { saveStore(); return; }
+    try { store = JSON.parse(s); if(!store.settings) store.settings = { matchingMode:'fifo', quoteCurrency:'USDT' }; }
+    catch(e){ console.error('load error', e); store = { transactions: [], buysRemaining: [], settings:{ matchingMode:'fifo', quoteCurrency:'USDT' } } }
+  }
+
+  // ---------- Receipt parsing (best-effort) ----------
+  function parseReceipt(text, defaultAsset='ETH'){
+    if(!text || !text.trim()) { showToast('Paste a receipt first'); return []; }
+    const joined = text.replace(/\s+/g,' ').trim();
+    const jLower = joined.toLowerCase();
+
+    // direction
+    let direction = null;
+    if(/buy|bought|market buy|limit buy/.test(jLower) && !/sell|sold/.test(jLower)) direction='buy';
+    if(/sell|sold|market sell|limit sell/.test(jLower) && !/buy|bought/.test(jLower)) direction='sell';
+    if(!direction) direction = /sell/.test(jLower) ? 'sell' : 'buy';
+
+    // price
+    let price = null;
+    const pMatch = joined.match(/(?:price|rate|@|avg)[\s:]*\$?([0-9,]+(?:\.[0-9]+)?)/i) || joined.match(/@ \$?([0-9,]+(?:\.[0-9]+)?)/i);
+    if(pMatch) price = pMatch[1].replace(/,/g,'');
+
+    // qty
+    let qty = null;
+    const qMatch = joined.match(/(?:qty|quantity|amount|filled|size)[\s:]*([0-9,]+(?:\.[0-9]+)?)/i);
+    if(qMatch) qty = qMatch[1].replace(/,/g,'');
+
+    // fallback: try to find "<number> ETH" pattern
+    if(!qty){
+      const q2 = joined.match(/([0-9,]+(?:\.[0-9]+)?)\s*(eth|btc|sol|avax|usdt|usdc)/i);
+      if(q2) qty = q2[1].replace(/,/g,'');
+    }
+
+    // fee
+    let fee = null; let feeCurrency = null;
+    const fMatch = joined.match(/fee[\s:]*([0-9,]+(?:\.[0-9]+)?)\s*([a-z%]*)/i);
+    if(fMatch){ fee = fMatch[1].replace(/,/g,''); feeCurrency = (fMatch[2]||'').toUpperCase() }
+
+    // pair detection
+    let pair = null;
+    const pairMatch = joined.match(/([A-Z]{3,5})\/(USDT|USD|USDC|BTC|ETH)/i);
+    if(pairMatch) pair = pairMatch[0];
+    else {
+      pair = (defaultAsset||'ETH') + '/USDT';
+    }
+    const base = pair.split('/')[0]; const quote = pair.split('/')[1];
+
+    // value
+    let filledValue = null;
+    if(price && qty) filledValue = D(price).times(D(qty)).toString();
+
+    // timestamp
+    let timestamp = new Date().toISOString();
+    const tsMatch = joined.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/) || joined.match(/\w+ \d{1,2}, \d{4}/);
+    if(tsMatch) {
+      try { timestamp = new Date(tsMatch[0]).toISOString(); } catch(e){}
+    }
+
+    if(!price || !qty){
+      showToast('Could not extract quantity or price. Please include "qty" and "price" in the receipt.');
+      return [];
+    }
+
+    const tx = {
+      id: uid('tx'),
+      pair, base, quote, direction,
+      price: D(price).toString(),
+      qty: D(qty).toString(),
+      fee: fee ? D(fee).toString() : null,
+      feeCurrency: feeCurrency || quote,
+      filledValue: filledValue,
+      timestamp, rawText: text, matched: []
+    };
+    return [tx];
+  }
+
+  // ---------- Matching & buysRemaining ----------
+  function rebuildBuysRemaining(){
+    store.buysRemaining = [];
+    const buys = store.transactions.filter(t => t.direction === 'buy');
+    buys.forEach(buy=>{
+      const matchedQty = buy.matched ? buy.matched.reduce((acc,m)=> D(acc).plus(D(m.qty)), D(0)) : D(0);
+      const remaining = D(buy.qty).minus(matchedQty);
+      if(remaining.gt(0)) store.buysRemaining.push({ txId: buy.id, remaining: remaining.toString(), price: buy.price, timestamp: buy.timestamp });
+    });
+    const mode = store.settings.matchingMode || 'fifo';
+    store.buysRemaining.sort((a,b)=> mode==='fifo' ? new Date(a.timestamp)-new Date(b.timestamp) : new Date(b.timestamp)-new Date(a.timestamp));
+  }
+
+  function performMatching(){
+    const mode = store.settings.matchingMode || 'fifo';
+    // reset
+    store.transactions.forEach(t=>{ t.matched = t.matched || []; t.remaining = t.qty; });
+    rebuildBuysRemaining();
+    const sells = store.transactions.filter(t=>t.direction==='sell').sort((a,b)=> new Date(a.timestamp)-new Date(b.timestamp));
+    sells.forEach(sell=>{
+      let remainingToMatch = D(sell.qty);
+      for(let i=0; i<store.buysRemaining.length && remainingToMatch.gt(0); i++){
+        const buyR = store.buysRemaining[i];
+        const buyTx = store.transactions.find(x=>x.id===buyR.txId);
+        if(!buyTx) continue;
+        const available = D(buyR.remaining);
+        const matchQty = Decimal.min(available, remainingToMatch);
+        if(matchQty.lte(0)) continue;
+        const buyPrice = D(buyTx.price), sellPrice = D(sell.price);
+        const costBasis = matchQty.times(buyPrice), proceeds = matchQty.times(sellPrice);
+        let feeImpact = D(0);
+        // fees (approx)
+        if(buyTx.fee){
+          const apport = D(buyTx.fee).times(matchQty.div(D(buyTx.qty)));
+          if((buyTx.feeCurrency||'').toUpperCase() === buyTx.base.toUpperCase()) feeImpact = feeImpact.minus(apport.times(buyPrice));
+          else feeImpact = feeImpact.minus(apport);
+        }
+        if(sell.fee){
+          const apport = D(sell.fee).times(matchQty.div(D(sell.qty)));
+          if((sell.feeCurrency||'').toUpperCase() === sell.base.toUpperCase()) feeImpact = feeImpact.minus(apport.times(sellPrice));
+          else feeImpact = feeImpact.minus(apport);
+        }
+        const realizedPL = proceeds.minus(costBasis).plus(feeImpact);
+        const matchRecord = { to: sell.id, qty: matchQty.toString(), realized: realizedPL.toString(), cost: costBasis.toString(), proceeds: proceeds.toString(), feeImpact: feeImpact.toString(), timestamp: new Date().toISOString() };
+        buyTx.matched.push({ ...matchRecord, to: sell.id });
+        sell.matched.push({ ...matchRecord, to: buyTx.id });
+        remainingToMatch = remainingToMatch.minus(matchQty);
+        buyR.remaining = D(buyR.remaining).minus(matchQty).toString();
+      }
+      if(remainingToMatch.gt(0)) sell.unmatchedQty = remainingToMatch.toString();
+    });
+    store.buysRemaining = store.buysRemaining.filter(b=> D(b.remaining).gt(0));
+    saveStore();
+  }
+
+  // ---------- Rendering ----------
+  function renderTxTable(){
+    const tbody = document.querySelector('#txTable tbody');
+    if(!tbody) return;
+    // use store.transactions sorted newest first
+    const sorted = [...store.transactions].sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp));
+    tbody.innerHTML = '';
+    sorted.forEach(tx=>{
+      const tr = document.createElement('tr');
+      const date = new Date(tx.timestamp).toLocaleString();
+      const dirEmoji = tx.direction==='buy' ? '📈' : '📉';
+      const matchedPL = tx.direction==='sell' ? (tx.matched ? tx.matched.reduce((acc,m)=> D(acc).plus(D(m.realized)), D(0)) : D(0)) : D(0);
+      const plClass = matchedPL.gte(0) ? 'positive' : 'negative';
+      tr.innerHTML = `<td class="tiny">${date}</td>
+        <td>${tx.pair}</td>
+        <td>${dirEmoji} ${tx.direction}</td>
+        <td>${fmt(tx.qty,8)} ${tx.base}</td>
+        <td>${fmt(tx.price,6)} ${tx.quote}</td>
+        <td>${tx.filledValue ? fmt(tx.filledValue,2) : fmt(D(tx.qty).times(D(tx.price)),2)} ${tx.quote}</td>
+        <td>${tx.fee ? fmt(tx.fee,6)+' '+(tx.feeCurrency||'') : '-'}</td>
+        <td class="${plClass}">${tx.direction==='sell' ? fmt(matchedPL,4)+' '+tx.quote : '-'}</td>
+        <td><button class="small-btn" data-id="${tx.id}">🗑️</button></td>`;
+      tbody.appendChild(tr);
+    });
+    // delete buttons
+    document.querySelectorAll('#txTable button[data-id]').forEach(b=>{
+      b.onclick = (e)=>{ const id = b.dataset.id; if(confirm('Delete transaction?')){ store.transactions = store.transactions.filter(t=>t.id!==id); rebuildBuysRemaining(); performMatching(); renderAll(); showToast('Deleted'); } }
+    });
+  }
+
+  function renderTxTable2(){ // journal table in journal view
+    const tbody = document.querySelector('#txTable2 tbody');
+    if(!tbody) return;
+    const sorted = [...store.transactions].sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp));
+    tbody.innerHTML = '';
+    sorted.forEach(tx=>{
+      const tr = document.createElement('tr');
+      const date = new Date(tx.timestamp).toLocaleString();
+      const dirEmoji = tx.direction==='buy' ? '📈' : '📉';
+      const matchedPL = tx.direction==='sell' ? (tx.matched ? tx.matched.reduce((acc,m)=> D(acc).plus(D(m.realized)), D(0)) : D(0)) : D(0);
+      const plClass = matchedPL.gte(0) ? 'positive' : 'negative';
+      tr.innerHTML = `<td class="tiny">${date}</td>
+        <td>${tx.pair}</td>
+        <td>${dirEmoji} ${tx.direction}</td>
+        <td>${fmt(tx.qty,8)} ${tx.base}</td>
+        <td>${fmt(tx.price,6)} ${tx.quote}</td>
+        <td>${tx.filledValue ? fmt(tx.filledValue,2) : fmt(D(tx.qty).times(D(tx.price)),2)} ${tx.quote}</td>
+        <td>${tx.fee ? fmt(tx.fee,6)+' '+(tx.feeCurrency||'') : '-'}</td>
+        <td class="${plClass}">${tx.direction==='sell' ? fmt(matchedPL,4)+' '+tx.quote : '-'}</td>
+        <td><button class="small-btn" data-id="${tx.id}">🗑️</button></td>`;
+      tbody.appendChild(tr);
+    });
+    document.querySelectorAll('#txTable2 button[data-id]').forEach(b=>{
+      b.onclick = (e)=>{ const id = b.dataset.id; if(confirm('Delete transaction?')){ store.transactions = store.transactions.filter(t=>t.id!==id); rebuildBuysRemaining(); performMatching(); renderAll(); showToast('Deleted'); } }
+    });
+  }
+
+  function renderDashboard(){
+    // realized PL
+    let totalRealized = D(0), totalFees = D(0), openPos = D(0);
+    store.transactions.forEach(tx=>{
+      if(tx.direction === 'sell'){
+        if(tx.matched) tx.matched.forEach(m => totalRealized = totalRealized.plus(D(m.realized)));
+      }
+      if(tx.fee){
+        // convert all fees to quote approx (we'll treat fee as quote if currency != base)
+        if((tx.feeCurrency||'').toUpperCase() === tx.base.toUpperCase()) totalFees = totalFees.plus(D(tx.fee).times(D(tx.price)));
+        else totalFees = totalFees.plus(D(tx.fee));
+      }
+      if(tx.direction === 'buy'){
+        const matchedQty = tx.matched ? tx.matched.reduce((acc,m)=> D(acc).plus(D(m.qty)), D(0)) : D(0);
+        const remaining = D(tx.qty).minus(matchedQty);
+        openPos = openPos.plus(remaining);
+      }
+    });
+    document.getElementById('dashRealized').textContent = (totalRealized.gte(0) ? '' : '') + fmt(totalRealized,4) + ' ' + (store.settings.quoteCurrency||'USDT');
+    document.getElementById('dashFees').textContent = fmt(totalFees,4) + ' ' + (store.settings.quoteCurrency||'USDT');
+    document.getElementById('dashOpen').textContent = fmt(openPos,6);
+    // mini
+    document.getElementById('miniReal').textContent = fmt(totalRealized,4);
+    document.getElementById('miniOpen').textContent = fmt(openPos,6);
+  }
+
+  function renderAll(){
+    renderTxTable(); renderTxTable2(); renderDashboard();
+  }
+
+  // ---------- CSV / JSON export ----------
+  function exportCSV(){
+    const headers = ['Date','Pair','Direction','Qty','Price','OrderValue','Fee','FeeCurrency','P/L'];
+    const rows = [headers];
+    store.transactions.forEach(tx=>{
+      const date = new Date(tx.timestamp).toISOString();
+      const pl = tx.direction==='sell' && tx.matched ? tx.matched.reduce((acc,m)=> D(acc).plus(D(m.realized)), D(0)).toString() : '0';
+      rows.push([date, tx.pair, tx.direction, tx.qty, tx.price, tx.filledValue || D(tx.qty).times(D(tx.price)).toString(), tx.fee||'0', tx.feeCurrency||'', pl]);
+    });
+    const csv = rows.map(r => r.map(f=>`"${String(f).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `crypto_tx_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function exportJSON(){
+    const blob = new Blob([JSON.stringify(store,null,2)], {type:'application/json'}); const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `crypto_store_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  // ---------- UI Navigation ----------
+  function showView(viewId){
+    const views = ['viewDashboard','viewCalculator','viewTradeCalc','viewJournal','viewSettings'];
+    views.forEach(v => document.getElementById(v).style.display = (v===viewId ? '' : 'none'));
+    // sidebar active
+    const mapping = { viewDashboard:'navDashboard', viewCalculator:'navCalculator', viewTradeCalc:'navTradeCalc', viewJournal:'navJournal', viewSettings:'navSettings' };
+    document.querySelectorAll('nav.sidebar .nav-item').forEach(n=>n.classList.remove('active'));
+    if(mapping[viewId]) document.getElementById(mapping[viewId]).classList.add('active');
+  }
+
+  // ---------- Calculator logic (quick + detailed) ----------
+  // Quick: balance from units * rate
+  document.getElementById('calcBalance').onclick = ()=>{
+    const units = D(document.getElementById('quickUnits').value || 0);
+    const rate = D(document.getElementById('quickRate').value || 0);
+    if(units.lte(0) || rate.lte(0)){ showToast('Enter valid units and rate'); return; }
+    const bal = units.times(rate);
+    document.getElementById('quickResult').style.display = 'block';
+    document.getElementById('quickBalance').textContent = fmt(bal,6) + ' USD';
+    document.getElementById('quickBalance').className = bal.gte(0) ? 'positive' : 'negative';
+    document.getElementById('quickPumpInfo').textContent = 'Tap "📈 Required Pump" to compute required price increase for a desired profit';
+  };
+
+  // Quick: required pump given units and desired profit
+  document.getElementById('calcPricePump').onclick = ()=>{
+    const units = D(document.getElementById('quickUnits').value || 0);
+    const rate = D(document.getElementById('quickRate').value || 0);
+    if(units.lte(0) || rate.lte(0)){ showToast('Enter valid units and rate'); return; }
+    const desired = prompt('Enter desired profit in USD (e.g. 55):', '55');
+    if(!desired) return;
+    const profit = D(desired);
+    if(profit.lte(0)){ showToast('Profit must be positive'); return; }
+    // required per-unit increase = profit / units
+    const increasePerUnit = profit.div(units);
+    const pct = increasePerUnit.div(rate).times(100);
+    const newPrice = rate.plus(increasePerUnit);
+    document.getElementById('quickResult').style.display='block';
+    document.getElementById('quickBalance').textContent = fmt(units.times(rate),6) + ' USD';
+    document.getElementById('quickPumpInfo').innerHTML = `${fmt(increasePerUnit,6)} USD ↑ per unit (${fmt(pct,4)}%) → New price ${fmt(newPrice,6)} USD`;
+  };
+
+  // Profit Planner (account-level)
+  document.getElementById('calcPumpFromAccount').onclick = ()=>{
+    const acc = D(document.getElementById('accBalance').value || 0);
+    const alloc = D(document.getElementById('allocPct').value || 100);
+    const price = D(document.getElementById('assetPrice').value || 0);
+    const desired = D(document.getElementById('desiredProfit').value || 0);
+    if(acc.lte(0) || price.lte(0) || desired.lte(0)){ showToast('Enter account, price and desired profit'); return; }
+    const allocation = acc.times(alloc).div(100);
+    const units = allocation.div(price); // units held
+    if(units.lte(0)){ showToast('No units computed'); return; }
+    const reqAbs = desired.div(units); // $ increase per unit
+    const reqPct = reqAbs.div(price).times(100);
+    const newPrice = price.plus(reqAbs);
+    document.getElementById('pumpResult').style.display='block';
+    document.getElementById('p_units').textContent = fmt(units,8) + ' units';
+    document.getElementById('p_abs').textContent = fmt(reqAbs,6) + ' USD';
+    document.getElementById('p_pct').textContent = fmt(reqPct,4) + ' %';
+    document.getElementById('p_new').textContent = fmt(newPrice,6) + ' USD';
+  };
+
+  document.getElementById('calcUnitsFromAccount').onclick = ()=>{
+    const acc = D(document.getElementById('accBalance').value || 0);
+    const alloc = D(document.getElementById('allocPct').value || 100);
+    const price = D(document.getElementById('assetPrice').value || 0);
+    if(acc.lte(0) || price.lte(0)){ showToast('Enter account and price'); return; }
+    const allocation = acc.times(alloc).div(100);
+    const units = allocation.div(price);
+    showToast(`You would hold ${fmt(units,8)} units`);
+    document.getElementById('p_units').textContent = fmt(units,8) + ' units';
+    document.getElementById('pumpResult').style.display='block';
+  };
+
+  // Detailed calculator view
+  document.getElementById('calcBtn1').onclick = ()=>{
+    const units = D(document.getElementById('calcUnits1').value || 0);
+    const rate = D(document.getElementById('calcRate1').value || 0);
+    if(units.lte(0) || rate.lte(0)){ showToast('Enter units and rate'); return; }
+    const balance = units.times(rate);
+    document.getElementById('calcRes1').style.display='block';
+    document.getElementById('r_balance').textContent = fmt(balance,6) + ' USD';
+    document.getElementById('r_balance').className = balance.gte(0) ? 'positive' : 'negative';
+  };
+
+  document.getElementById('calcTarget1').onclick = ()=>{
+    const units = D(document.getElementById('calcUnits1').value || 0);
+    const rate = D(document.getElementById('calcRate1').value || 0);
+    if(units.lte(0) || rate.lte(0)){ showToast('Enter units and rate'); return; }
+    const desired = D(document.getElementById('r_profit_input').value || 0);
+    if(desired.lte(0)){ showToast('Enter desired profit'); return; }
+    const reqAbs = desired.div(units);
+    const reqPct = reqAbs.div(rate).times(100);
+    const newPrice = rate.plus(reqAbs);
+    document.getElementById('calcRes1').style.display='block';
+    document.getElementById('r_req_abs').textContent = fmt(reqAbs,6) + ' USD';
+    document.getElementById('r_req_pct').textContent = fmt(reqPct,4) + ' %';
+    document.getElementById('r_req_new').textContent = fmt(newPrice,6) + ' USD';
+  };
+
+  // Invested -> units
+  document.getElementById('calcUnitsFromInvest').onclick = ()=>{
+    const invested = D(document.getElementById('invested').value || 0);
+    const price = D(document.getElementById('investPrice').value || 0);
+    if(invested.lte(0) || price.lte(0)){ showToast('Enter invested USD and price'); return; }
+    const units = invested.div(price);
+    document.getElementById('investRes').style.display='block';
+    document.getElementById('i_units').textContent = fmt(units,8) + ' units';
+    document.getElementById('i_balance').textContent = fmt(units.times(price),6) + ' USD';
+  };
+
+  // ---------- Trade Planner ----------
+  document.getElementById('tCalc').onclick = ()=>{
+    const entry = D(document.getElementById('tEntry').value || 0);
+    const amt = D(document.getElementById('tAmount').value || 0);
+    const targetProfit = D(document.getElementById('tProfit').value || 0);
+    const maxLoss = D(document.getElementById('tLoss').value || 0);
+    if(entry.lte(0) || amt.lte(0) || targetProfit.lte(0) || maxLoss.lte(0)){ showToast('Enter valid trade inputs'); return; }
+    const capital = entry.times(amt);
+    const tpPrice = entry.plus(targetProfit.div(amt));
+    const slPrice = entry.minus(maxLoss.div(amt));
+    const capitalIfSL = capital.minus(maxLoss);
+    const roi = targetProfit.div(capital).times(100);
+    const rr = targetProfit.div(maxLoss);
+    document.getElementById('tResult').style.display='block';
+    document.getElementById('t_cap').textContent = fmt(capital,2)+' USD';
+    document.getElementById('t_tp').textContent = fmt(tpPrice,6)+' USD';
+    document.getElementById('t_sl').textContent = fmt(slPrice,6)+' USD';
+    document.getElementById('t_pot').textContent = (targetProfit.gte(0)?'+':'')+fmt(targetProfit,2)+' USD'; document.getElementById('t_pot').className = targetProfit.gte(0)?'positive':'negative';
+    document.getElementById('t_potloss').textContent = (maxLoss.gte(0)?'-':'')+fmt(maxLoss,2)+' USD'; document.getElementById('t_potloss').className = 'negative';
+    document.getElementById('t_roi').textContent = fmt(roi,2)+' %';
+    document.getElementById('t_rr').textContent = '1:'+fmt(rr,2);
+    // store some current trade in-memory for trail application
+    window._lastTrade = { entry, amt, tpPrice, slPrice, capital, targetProfit, maxLoss };
+  };
+
+  document.getElementById('tCalcTrail').onclick = ()=>{
+    if(!window._lastTrade){ showToast('Calculate a trade first'); return; }
+    const dist = prompt('Trailing distance in USD (distance below highest price to trail):', '100');
+    if(!dist) return;
+    const d = D(dist);
+    const takeProfit = window._lastTrade.tpPrice;
+    const trailingStopPrice = D(takeProfit).minus(d);
+    const securedProfit = trailingStopPrice.minus(window._lastTrade.entry).times(window._lastTrade.amt);
+    document.getElementById('tResult').style.display='block';
+    document.getElementById('t_tp').textContent = fmt(takeProfit,6)+' USD (activation)';
+    document.getElementById('t_sl').textContent = fmt(window._lastTrade.slPrice,6)+' USD';
+    document.getElementById('t_pot').textContent = fmt(window._lastTrade.targetProfit,2)+' USD';
+    // show trailing info
+    document.getElementById('trailInfo').style.display='block';
+    document.getElementById('ti_stop').textContent = fmt(trailingStopPrice,6)+' USD';
+    document.getElementById('ti_sec').textContent = (securedProfit.gte(0)?'+':'')+fmt(securedProfit,2)+' USD';
+    window._lastTrail = { trailingStopPrice, securedProfit, d };
+  };
+
+  document.getElementById('applyTrail').onclick = ()=>{
+    const d = D(document.getElementById('trailDist').value || 0);
+    if(!window._lastTrade || d.lte(0)){ showToast('Set trade or trailing distance'); return; }
+    const trailingStopPrice = D(window._lastTrade.tpPrice).minus(d);
+    const securedProfit = trailingStopPrice.minus(window._lastTrade.entry).times(window._lastTrade.amt);
+    document.getElementById('trailInfo').style.display='block';
+    document.getElementById('ti_stop').textContent = fmt(trailingStopPrice,6)+' USD';
+    document.getElementById('ti_sec').textContent = (securedProfit.gte(0)?'+':'')+fmt(securedProfit,2)+' USD';
+  };
+
+  document.getElementById('clearTrail').onclick = ()=>{
+    document.getElementById('trailInfo').style.display='none';
+    document.getElementById('ti_stop').textContent = '—';
+    document.getElementById('ti_sec').textContent = '—';
+  };
+
+  // ---------- Journal actions ----------
+  document.getElementById('parseBtn').onclick = ()=>{
+    const text = document.getElementById('receiptInput').value;
+    const def = document.getElementById('defaultAsset').value || 'ETH';
+    const txs = parseReceipt(text, def);
+    if(txs.length === 0) return;
+    // preview
+    const list = document.getElementById('previewList'); list.innerHTML = '';
+    txs.forEach(tx=>{
+      const div = document.createElement('div'); div.className='tiny';
+      const emoji = tx.direction==='buy'?'📈':'📉';
+      div.textContent = `${emoji} ${tx.direction.toUpperCase()} ${fmt(tx.qty,8)} ${tx.base} @ ${fmt(tx.price,6)} ${tx.quote}`;
+      list.appendChild(div);
+    });
+    document.getElementById('parsePreview').style.display='block';
+    window._latestParsed = txs;
+  };
+
+  document.getElementById('saveParsed').onclick = ()=>{
+    if(!window._latestParsed || window._latestParsed.length===0){ showToast('Nothing to save'); return; }
+    window._latestParsed.forEach(tx=>{
+      store.transactions.push(tx);
+    });
+    rebuildBuysRemaining(); performMatching(); saveStore(); renderAll();
+    document.getElementById('parsePreview').style.display='none'; document.getElementById('receiptInput').value='';
+    window._latestParsed = null;
+    showToast('Saved to journal ✅');
+  };
+
+  document.getElementById('clearReceipt').onclick = ()=>{ document.getElementById('receiptInput').value=''; document.getElementById('parsePreview').style.display='none'; window._latestParsed=null; }
+
+  document.getElementById('clearAll').onclick = ()=>{
+    if(!confirm('Reset all stored data? This cannot be undone.')) return;
+    localStorage.removeItem(KEY); store = { transactions: [], buysRemaining: [], settings: {matchingMode:'fifo', quoteCurrency:'USDT'} }; renderAll(); showToast('Storage cleared');
+  };
+
+  document.getElementById('exportCsv2').onclick = exportCSV;
+  document.getElementById('exportJson2').onclick = exportJSON;
+
+  // Import JSON (from top dashboard import)
+  document.getElementById('importDataBtn').onclick = ()=> document.getElementById('importFile').click();
+  document.getElementById('importBtn2').onclick = ()=> document.getElementById('importFile').click();
+  document.getElementById('importFile').addEventListener('change', (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=> {
+      try{
+        const data = JSON.parse(ev.target.result);
+        if(data.transactions){ store = data; saveStore(); renderAll(); showToast('Imported store'); } else showToast('Invalid file');
+      } catch(err){ showToast('Import error'); }
+    };
+    reader.readAsText(file);
+  });
+
+  // Settings listeners
+  document.getElementById('matchingMode').addEventListener('change',(e)=>{ store.settings.matchingMode = e.target.value; saveStore(); rebuildBuysRemaining(); performMatching(); renderAll(); });
+  document.getElementById('quoteCurrency').addEventListener('change',(e)=>{ store.settings.quoteCurrency = e.target.value; saveStore(); renderAll(); });
+
+  // Export / backup
+  document.getElementById('exportAll').onclick = exportJSON;
+  document.getElementById('backupBtn').onclick = exportJSON;
+  document.getElementById('clearStorage').onclick = ()=>{ if(confirm('Clear localStorage?')){ localStorage.clear(); loadStore(); renderAll(); showToast('Local storage cleared'); } };
+
+  // nav buttons
+  document.getElementById('navDashboard').onclick = ()=> showView('viewDashboard');
+  document.getElementById('navCalculator').onclick = ()=> showView('viewCalculator');
+  document.getElementById('navTradeCalc').onclick = ()=> showView('viewTradeCalc');
+  document.getElementById('navJournal').onclick = ()=> showView('viewJournal');
+  document.getElementById('navSettings').onclick = ()=> showView('viewSettings');
+
+  // mobile nav
+  document.getElementById('mDashboard').onclick = ()=> showView('viewDashboard');
+  document.getElementById('mCalc').onclick = ()=> showView('viewCalculator');
+  document.getElementById('mJournal').onclick = ()=> showView('viewJournal');
+
+  // hamburger: toggle sidebar on small screens
+  const hamb = document.getElementById('hamb'), sidebar = document.getElementById('sidebar');
+  let sidebarVisible = true;
+  hamb.onclick = ()=>{
+    if(window.innerWidth < 980){
+      sidebarVisible = !sidebarVisible;
+      sidebar.style.display = sidebarVisible ? 'flex' : 'none';
+    } else {
+      // collapse/expand on wide screens
+      sidebar.classList.toggle('collapsed');
+      // small visual cue
+    }
+  };
+
+  // back button
+  document.getElementById('backToDash').onclick = ()=> showView('viewDashboard');
+
+  // initial load
+  loadStore();
+  renderAll();
+
+  // welcome message
+  setTimeout(()=>{ if(store.transactions.length===0) showToast('Welcome! Paste your first receipt to get started 🚀',2200); }, 800);
+
+  // responsive initial state for small screens
+  if(window.innerWidth < 980) sidebar.style.display = 'none';
+
+  </script>
+</body>
+</html>
