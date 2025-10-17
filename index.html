@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Suite - Executive Trading Platform</title>
+  <script src="https://cdn.jsdelivr.net/npm/decimal.js@10/decimal.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --accent: #06b6d4;
+      --accent-light: #22d3ee;
+      --muted: #94a3b8;
+      --glass: rgba(255,255,255,0.03);
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text: #e6eef6;
+      --border: rgba(255,255,255,0.05);
+    }
+    
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #071126 0%, #071727 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Header and Navigation */
+    header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 100;
+    }
+    
+    .logo {
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .hamburger-menu {
+      position: relative;
+    }
+    
+    .hamburger-btn {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+    
+    .hamburger-btn:hover {
+      background: var(--glass);
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      padding: 0.5rem;
+      min-width: 180px;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .dropdown-menu.show {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    .dropdown-item {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .dropdown-item:hover {
+      background: var(--glass);
+    }
+    
+    .dropdown-item.active {
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--accent);
+    }
+    
+    /* Main Container */
+    .main-container {
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .card {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
+    }
+    
+    .card-title {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .card-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+    
+    .card-value.positive {
+      color: var(--success);
+    }
+    
+    .card-value.negative {
+      color: var(--danger);
+    }
+    
+    /* Content Sections */
+    .content-section {
+      display: none;
+    }
+    
+    .content-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    /* Journal Section */
+    .journal-section .card {
+      margin-bottom: 1.5rem;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: inherit;
+      padding: 1rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s ease;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+    }
+    
+    .row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    
+    button {
+      background: var(--accent);
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      color: #042028;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    button:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+    }
+    
+    button.danger {
+      background: var(--danger);
+      color: white;
+    }
+    
+    button.danger:hover {
+      background: #f87171;
+    }
+    
+    button.success {
+      background: var(--success);
+      color: white;
+    }
+    
+    button.success:hover {
+      background: #34d399;
+    }
+    
+    input, select {
+      padding: 0.75rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--glass);
+      color: inherit;
+      transition: border-color 0.2s ease;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 0.95rem;
+    }
+    
+    th {
+      color: var(--muted);
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    .muted {
+      color: var(--muted);
+    }
+    
+    .small {
+      font-size: 0.9rem;
+    }
+    
+    .table-scroll {
+      max-height: 400px;
+      overflow: auto;
+      border-radius: 8px;
+      margin: 0.5rem 0;
+    }
+    
+    /* Trade Planner Section */
+    .mode-selector {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      background: var(--card);
+      border: none;
+      color: var(--text);
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 0 5px;
+    }
+    
+    .mode-btn.active {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .input-section {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--accent);
+    }
+    
+    .section-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      color: var(--text);
+    }
+    
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-size: 14px;
+    }
+    
+    .result-section {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+    
+    .result-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: var(--text);
+      font-size: 18px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 12px 0;
+    }
+    
+    .result-label {
+      font-weight: 500;
+    }
+    
+    .result-value {
+      font-weight: bold;
+    }
+    
+    .profit {
+      color: var(--success);
+    }
+    
+    .loss {
+      color: var(--danger);
+    }
+    
+    .warning {
+      color: var(--warning);
+    }
+    
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 15px 0;
+    }
+    
+    /* Settings Section */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: var(--glass);
+      border-radius: 10px;
+    }
+    
+    .toggle-label {
+      font-weight: 500;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+      background-color: var(--accent);
+    }
+    
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      background: var(--card);
+      border-left: 4px solid var(--accent);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast.success {
+      border-left-color: var(--success);
+    }
+    
+    .toast.error {
+      border-left-color: var(--danger);
+    }
+    
+    /* Price Ticker */
+    .price-ticker {
+      display: flex;
+      overflow: hidden;
+      background: var(--card);
+      border-radius: 8px;
+      padding: 0.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+    }
+    
+    .price-item {
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      border-right: 1px solid var(--border);
+    }
+    
+    .price-item:last-child {
+      border-right: none;
+    }
+    
+    .price-symbol {
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+    
+    .price-value {
+      margin-right: 0.5rem;
+    }
+    
+    .price-change {
+      font-size: 0.85rem;
+    }
+    
+    .price-change.positive {
+      color: var(--success);
+    }
+    
+    .price-change.negative {
+      color: var(--danger);
+    }
+    
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      color: var(--muted);
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+    
+    .status-dot.warning {
+      background: var(--warning);
+    }
+    
+    .status-dot.error {
+      background: var(--danger);
+    }
+    
+    /* Refresh Timer */
+    .refresh-timer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      margin-left: auto;
+      color: var(--muted);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 1rem;
+      }
+      
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      
+      .row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .row button, .row select, .row input {
+        width: 100%;
+      }
+      
+      .price-ticker {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      
+      .price-item {
+        border-right: none;
+        padding: 0.25rem 0.5rem;
+      }
+    }
+    
+    /* Tablet Mode */
+    .tablet-mode .main-container {
+      max-width: 100%;
+      padding: 1rem;
+    }
+    
+    .tablet-mode .dashboard {
+      grid-template-columns: 1fr;
+    }
+    
+    .tablet-mode .card {
+      padding: 1rem;
+    }
+    
+    .tablet-mode .row {
+      flex-direction: column;
+    }
+    
+    .tablet-mode .row button, 
+    .tablet-mode .row select, 
+    .tablet-mode .row input {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hamburger-menu">
+      <button class="hamburger-btn">☰</button>
+      <div class="dropdown-menu">
+        <div class="dropdown-item active" data-section="dashboard">📊 Dashboard</div>
+        <div class="dropdown-item" data-section="trade-planner">📈 Trade Planner</div>
+        <div class="dropdown-item" data-section="journal">📝 Journal</div>
+        <div class="dropdown-item" data-section="settings">⚙️ Settings</div>
+      </div>
+    </div>
+    <div class="logo">Crypto Suite</div>
+  </header>
+
+  <div class="main-container">
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="content-section active">
+      <!-- Price Ticker -->
+      <div class="price-ticker">
+        <div class="price-item">
+          <span class="price-symbol">BTC:</span>
+          <span class="price-value" id="btcPrice">Loading...</span>
+          <span class="price-change" id="btcChange">(0.00%)</span>
+        </div>
+        <div class="price-item">
+          <span class="price-symbol">ETH:</span>
+          <span class="price-value" id="ethPrice">Loading...</span>
+          <span class="price-change" id="ethChange">(0.00%)</span>
+        </div>
+        <div class="price-item">
+          <span class="price-symbol">SOL:</span>
+          <span class="price-value" id="solPrice">Loading...</span>
+          <span class="price-change" id="solChange">(0.00%)</span>
+        </div>
+        <div class="api-status">
+          <span class="status-dot" id="apiStatus"></span>
+          <span id="apiStatusText">Connecting to price API...</span>
+        </div>
+        <div class="refresh-timer">
+          <span>🔄 Next refresh:</span>
+          <span id="refreshTimer">30s</span>
+        </div>
+      </div>
+      
+      <div class="dashboard">
+        <div class="card">
+          <div class="card-title">💰 Portfolio Value</div>
+          <div class="card-value" id="portfolioValue">$0.00</div>
+          <div class="small muted" id="balanceToggle">No transactions yet</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📈 Realized P/L</div>
+          <div class="card-value" id="realizedPl">$0.00</div>
+        </div>
+        <div class="card">
+          <div class="card-title">💸 Total Fees</div>
+          <div class="card-value" id="totalFees">$0.00</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem">
+        <h3>📊 Current Holdings</h3>
+        <div id="holdingsList" class="small muted">
+          No holdings yet. Add transactions to see your portfolio.
+        </div>
+      </div>
+    </section>
+
+    <!-- Trade Planner Section -->
+    <section id="trade-planner" class="content-section">
+      <div class="card">
+        <h3>📈 Trade Planner</h3>
+        
+        <div class="mode-selector">
+          <button class="mode-btn active" id="tpSlBtn">📊 TP/SL Mode</button>
+          <button class="mode-btn" id="trailingBtn">📉 Trailing Stop Mode</button>
+        </div>
+
+        <div class="input-section">
+          <div class="section-title">🔹 Trade Parameters</div>
+          
+          <label>Select Asset</label>
+          <select id="asset">
+            <option value="bitcoin">Bitcoin (BTC)</option>
+            <option value="ethereum">Ethereum (ETH)</option>
+            <option value="solana">Solana (SOL)</option>
+          </select>
+
+          <label>Entry Price ($)</label>
+          <input type="number" id="entryPrice" step="0.000001" placeholder="e.g. 50000">
+
+          <label>Amount (Asset Units)</label>
+          <input type="number" id="amount" step="0.000001" placeholder="e.g. 0.5">
+
+          <label>Target Profit ($)</label>
+          <input type="number" id="targetProfit" step="0.000001" placeholder="e.g. 1000">
+
+          <label>Maximum Capital Loss ($)</label>
+          <input type="number" id="maxCapitalLoss" step="0.000001" placeholder="e.g. 500" value="100">
+          
+          <div id="trailingInput" style="display: none;">
+            <label>Trailing Stop Distance ($)</label>
+            <input type="number" id="trailingDistance" step="0.000001" placeholder="e.g. 200">
+          </div>
+        </div>
+
+        <button onclick="calculateTrade()">💹 Calculate Trade</button>
+
+        <div class="result-section" id="tpSlResult">
+          <div class="result-title">📊 TP/SL Results</div>
+          
+          <div class="result-row">
+            <span class="result-label">💰 Total Capital:</span>
+            <span class="result-value" id="capitalValue">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🎯 Take Profit Price:</span>
+            <span class="result-value" id="tpPrice">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🛑 Stop Loss Price:</span>
+            <span class="result-value" id="slPrice">$0.00</span>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="result-row">
+            <span class="result-label">📈 Potential Profit:</span>
+            <span class="result-value profit" id="potentialProfit">+$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">📉 Potential Loss:</span>
+            <span class="result-value loss" id="potentialLoss">-$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">⚠️ Capital if SL Hits:</span>
+            <span class="result-value warning" id="capitalIfSL">$0.00</span>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="result-row">
+            <span class="result-label">📊 ROI:</span>
+            <span class="result-value" id="roiValue">0%</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">⚖️ Risk/Reward:</span>
+            <span class="result-value" id="rrRatio">1:0</span>
+          </div>
+        </div>
+
+        <div class="result-section" id="trailingResult">
+          <div class="result-title">📉 Trailing Stop Results</div>
+          
+          <div class="result-row">
+            <span class="result-label">💰 Total Capital:</span>
+            <span class="result-value" id="trailingCapital">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🎯 Take Profit Price:</span>
+            <span class="result-value" id="trailingTP">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🛑 Stop Loss Price:</span>
+            <span class="result-value" id="trailingSL">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">📌 Activation Price:</span>
+            <span class="result-value" id="activationPrice">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🔄 Trailing Stop Price:</span>
+            <span class="result-value" id="trailingStopPrice">$0.00</span>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="result-row">
+            <span class="result-label">📈 Potential Profit:</span>
+            <span class="result-value profit" id="trailingProfit">+$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">📉 Potential Loss:</span>
+            <span class="result-value loss" id="trailingLoss">-$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">⚠️ Capital if SL Hits:</span>
+            <span class="result-value warning" id="trailingCapitalSL">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🔒 Secured Profit:</span>
+            <span class="result-value profit" id="securedProfit">+$0.00</span>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="result-row">
+            <span class="result-label">📊 ROI:</span>
+            <span class="result-value" id="trailingROI">0%</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">⚖️ Risk/Reward:</span>
+            <span class="result-value" id="trailingRR">1:0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Journal Section -->
+    <section id="journal" class="content-section">
+      <div class="card">
+        <h3>📥 Add Transaction</h3>
+        <div class="small muted">Add your buy/sell transactions manually</div>
+        
+        <div class="row">
+          <select id="txType">
+            <option value="BUY">BUY</option>
+            <option value="SELL">SELL</option>
+          </select>
+          <select id="txAsset">
+            <option value="BTC">BTC</option>
+            <option value="ETH">ETH</option>
+            <option value="SOL">SOL</option>
+            <option value="USDT">USDT</option>
+          </select>
+        </div>
+        
+        <div class="row">
+          <input type="number" id="txAmount" placeholder="Amount" step="0.000001">
+          <input type="number" id="txPrice" placeholder="Price per unit ($)" step="0.000001">
+        </div>
+        
+        <div class="row">
+          <input type="number" id="txFee" placeholder="Fee" step="0.000001" value="0">
+          <select id="txFeeCurrency">
+            <option value="USDT">USDT</option>
+            <option value="BTC">BTC</option>
+            <option value="ETH">ETH</option>
+            <option value="SOL">SOL</option>
+          </select>
+        </div>
+        
+        <div class="row">
+          <input type="datetime-local" id="txDate">
+          <button id="addTransaction" class="success">➕ Add Transaction</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem">
+        <h3>📋 Transactions</h3>
+        <div class="table-scroll">
+          <table id="txTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Asset</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Value</th>
+                <th>Fee</th>
+                <th>P/L</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="txTableBody">
+              <!-- Transactions will be populated here -->
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top: 1rem" class="row">
+          <button id="exportCsv">📊 Export CSV</button>
+          <button id="exportJson">💾 Export JSON</button>
+          <input type="file" id="importFile" accept=".json" style="display: none;" />
+          <button id="importBtn">📤 Import</button>
+          <button id="resetStore" class="danger">🔄 Reset Storage</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Section -->
+    <section id="settings" class="content-section">
+      <div class="settings-grid">
+        <div class="card">
+          <h3>🔄 Toggles</h3>
+          <div class="toggle-container">
+            <div class="toggle-label">Tablet Mode ↔ Desktop Mode</div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="tabletModeToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>💾 Data Management</h3>
+          <div class="row">
+            <button id="backupData" class="success">📥 Backup Data</button>
+            <button id="clearStorage" class="danger">🗑️ Clear Storage</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toast notification element -->
+  <div id="toast" class="toast">
+    <span id="toastMessage"></span>
+  </div>
+
+  <script>
+    // Crypto Suite Application
+    const STORAGE_KEY = 'cryptoSuite_v4';
+    
+    // Load or initialize store
+    let store = { 
+      transactions: [], 
+      settings: {
+        tabletMode: false,
+        refreshInterval: 30000 // 30 seconds
+      }
+    };
+    
+    // Price data storage
+    let priceData = {
+      bitcoin: { usd: 0, usd_24h_change: 0 },
+      ethereum: { usd: 0, usd_24h_change: 0 },
+      solana: { usd: 0, usd_24h_change: 0 }
+    };
+    
+    // API status
+    let apiStatus = {
+      coingecko: 'unknown',
+      cryptocompare: 'unknown',
+      bitstamp: 'unknown',
+      coinpaprika: 'unknown',
+      current: 'unknown'
+    };
+    
+    // Refresh timer
+    let refreshTimer = null;
+    let refreshCountdown = 30;
+    
+    // Decimal.js convenience function
+    function D(v) { 
+      try { 
+        if (v instanceof Decimal) return v;
+        return new Decimal(v || 0); 
+      } catch(e) { 
+        console.error("Decimal conversion error:", e, "value:", v);
+        return new Decimal(0); 
+      } 
+    }
+
+    // Format numbers with commas and fixed decimals
+    function formatNumber(value, decimals = 8) {
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+      if (isNaN(num)) return '0';
+      
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: decimals
+      }).format(num);
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      
+      toastMessage.textContent = message;
+      toast.className = `toast ${type} show`;
+      
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 3000);
+    }
+
+    // Save store to localStorage
+    function saveStore() { 
+      // Convert Decimal objects to strings before saving
+      const storeToSave = {
+        ...store,
+        transactions: store.transactions.map(tx => ({
+          ...tx,
+          amount: tx.amount.toString(),
+          price: tx.price.toString(),
+          orderValue: tx.orderValue.toString(),
+          fee: tx.fee.toString(),
+          feeInUSDT: tx.feeInUSDT.toString(),
+          profitLoss: tx.profitLoss.toString()
+        }))
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(storeToSave)); 
+    }
+
+    // Load store from localStorage
+    function loadStore() { 
+      const s = localStorage.getItem(STORAGE_KEY); 
+      if (s) { 
+        try { 
+          const parsed = JSON.parse(s);
+          store = parsed;
+          
+          // Convert string values back to Decimal
+          store.transactions = store.transactions.map(tx => ({
+            ...tx,
+            amount: D(tx.amount),
+            price: D(tx.price),
+            orderValue: D(tx.orderValue),
+            fee: D(tx.fee),
+            feeInUSDT: D(tx.feeInUSDT || 0),
+            profitLoss: D(tx.profitLoss || 0)
+          }));
+          
+          // Initialize settings if they don't exist
+          if (!store.settings) {
+            store.settings = {
+              tabletMode: false,
+              refreshInterval: 30000
+            };
+          }
+          
+          // Update UI to reflect stored settings
+          if (document.getElementById('tabletModeToggle')) {
+            document.getElementById('tabletModeToggle').checked = store.settings.tabletMode;
+            updateTabletMode();
+          }
+          
+        } catch(e) { 
+          console.error('Parse error', e); 
+          initializeDefaultStore();
+        } 
+      } else { 
+        initializeDefaultStore();
+      } 
+    }
+
+    function initializeDefaultStore() {
+      store = { 
+        transactions: [], 
+        settings: {
+          tabletMode: false,
+          refreshInterval: 30000
+        }
+      };
+    }
+
+    // Generate unique ID
+    function uid(prefix = 'id') { 
+      return prefix + '_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36);
+    }
+
+    // Calculate portfolio metrics
+    function calculatePortfolio() {
+      // Calculate holdings
+      const holdings = {};
+      let totalFees = D(0);
+      let realizedPL = D(0);
+      
+      // Track buy queue for FIFO calculation
+      const buyQueue = {
+        BTC: [],
+        ETH: [],
+        SOL: [],
+        USDT: []
+      };
+      
+      // Process transactions in chronological order
+      const sortedTxs = [...store.transactions].sort((a, b) => 
+        new Date(a.date) - new Date(b.date)
+      );
+      
+      sortedTxs.forEach(tx => {
+        const asset = tx.asset;
+        totalFees = totalFees.plus(tx.feeInUSDT);
+        
+        if (tx.type === 'BUY') {
+          // Add to buy queue
+          if (!buyQueue[asset]) buyQueue[asset] = [];
+          buyQueue[asset].push({
+            amount: tx.amount,
+            price: tx.price,
+            date: tx.date
+          });
+          
+        } else if (tx.type === 'SELL') {
+          // FIFO matching for P/L calculation
+          let remainingSell = tx.amount;
+          let totalCostBasis = D(0);
+          
+          while (remainingSell.gt(0) && buyQueue[asset] && buyQueue[asset].length > 0) {
+            const oldestBuy = buyQueue[asset][0];
+            const amountToSell = Decimal.min(remainingSell, oldestBuy.amount);
+            
+            // Calculate cost basis for this portion
+            const costBasis = amountToSell.times(oldestBuy.price);
+            totalCostBasis = totalCostBasis.plus(costBasis);
+            
+            // Update buy amount
+            oldestBuy.amount = oldestBuy.amount.minus(amountToSell);
+            remainingSell = remainingSell.minus(amountToSell);
+            
+            // Remove fully sold buys
+            if (oldestBuy.amount.equals(0)) {
+              buyQueue[asset].shift();
+            }
+          }
+          
+          // Calculate P/L for this sale
+          const proceeds = tx.amount.times(tx.price);
+          const pl = proceeds.minus(totalCostBasis).minus(tx.feeInUSDT);
+          tx.profitLoss = pl;
+          realizedPL = realizedPL.plus(pl);
+        }
+      });
+      
+      // Calculate current holdings from buy queue
+      Object.keys(buyQueue).forEach(asset => {
+        holdings[asset] = buyQueue[asset].reduce((sum, buy) => sum.plus(buy.amount), D(0));
+      });
+      
+      // Calculate current portfolio value using live prices
+      const btcValue = holdings.BTC ? holdings.BTC.times(D(priceData.bitcoin.usd)) : D(0);
+      const ethValue = holdings.ETH ? holdings.ETH.times(D(priceData.ethereum.usd)) : D(0);
+      const solValue = holdings.SOL ? holdings.SOL.times(D(priceData.solana.usd)) : D(0);
+      const usdtValue = holdings.USDT || D(0);
+      
+      const portfolioValue = btcValue.plus(ethValue).plus(solValue).plus(usdtValue);
+      
+      return {
+        portfolioValue,
+        realizedPL,
+        totalFees,
+        holdings
+      };
+    }
+
+    // Update portfolio display
+    function updatePortfolioDisplay() {
+      const metrics = calculatePortfolio();
+      
+      // Update dashboard values
+      document.getElementById('portfolioValue').textContent = `$${formatNumber(metrics.portfolioValue, 2)}`;
+      document.getElementById('realizedPl').textContent = `$${formatNumber(metrics.realizedPL, 2)}`;
+      document.getElementById('realizedPl').className = `card-value ${metrics.realizedPL.gt(0) ? 'positive' : metrics.realizedPL.lt(0) ? 'negative' : ''}`;
+      document.getElementById('totalFees').textContent = `$${formatNumber(metrics.totalFees, 2)}`;
+      
+      // Update holdings list
+      updateHoldingsList(metrics.holdings);
+    }
+
+    // Update holdings list
+    function updateHoldingsList(holdings) {
+      const holdingsList = document.getElementById('holdingsList');
+      
+      // Filter out zero holdings
+      const activeHoldings = Object.entries(holdings)
+        .filter(([asset, amount]) => amount.gt(0))
+        .map(([asset, amount]) => {
+          const currentPrice = getCurrentPrice(asset);
+          const value = amount.times(currentPrice);
+          
+          return {
+            asset,
+            amount,
+            value
+          };
+        });
+      
+      if (activeHoldings.length === 0) {
+        holdingsList.innerHTML = '<div class="muted">No holdings yet. Add transactions to see your portfolio.</div>';
+        return;
+      }
+      
+      holdingsList.innerHTML = activeHoldings.map(h => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: var(--glass); border-radius: 8px; margin-bottom: 0.5rem;">
+          <div>
+            <strong>${h.asset}</strong>
+            <div class="small muted">${formatNumber(h.amount, 6)}</div>
+          </div>
+          <div style="text-align: right;">
+            $${formatNumber(h.value, 2)}
+            <div class="small muted">@ $${formatNumber(getCurrentPrice(h.asset), 2)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Get current price for an asset
+    function getCurrentPrice(asset) {
+      const symbol = asset.toLowerCase();
+      if (symbol === 'btc') return D(priceData.bitcoin.usd || 0);
+      if (symbol === 'eth') return D(priceData.ethereum.usd || 0);
+      if (symbol === 'sol') return D(priceData.solana.usd || 0);
+      if (symbol === 'usdt') return D(1);
+      return D(0);
+    }
+
+    // Render transactions table
+    function renderTransactions() {
+      const tbody = document.getElementById('txTableBody');
+      
+      if (store.transactions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem;" class="muted">No transactions yet</td></tr>';
+        return;
+      }
+      
+      // Sort transactions by date (newest first)
+      const sortedTxs = [...store.transactions].sort((a, b) => 
+        new Date(b.date) - new Date(a.date)
+      );
+      
+      tbody.innerHTML = sortedTxs.map(tx => {
+        const date = new Date(tx.date);
+        const dateStr = date.toLocaleDateString();
+        const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        return `
+          <tr>
+            <td>${dateStr} ${timeStr}</td>
+            <td>${tx.type}</td>
+            <td>${tx.asset}</td>
+            <td>${formatNumber(tx.amount, 6)}</td>
+            <td>$${formatNumber(tx.price, 2)}</td>
+            <td>$${formatNumber(tx.orderValue, 2)}</td>
+            <td>${formatNumber(tx.fee, 6)} ${tx.feeCurrency}</td>
+            <td class="${tx.profitLoss.gt(0) ? 'profit' : tx.profitLoss.lt(0) ? 'loss' : ''}">
+              ${tx.profitLoss.gt(0) ? '+' : ''}$${formatNumber(tx.profitLoss, 2)}
+            </td>
+            <td>
+              <button class="small danger" onclick="deleteTransaction('${tx.id}')">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Delete a transaction
+    function deleteTransaction(id) {
+      if (confirm('Are you sure you want to delete this transaction?')) {
+        store.transactions = store.transactions.filter(tx => tx.id !== id);
+        saveStore();
+        renderTransactions();
+        updatePortfolioDisplay();
+        showToast('Transaction deleted', 'success');
+      }
+    }
+
+    // Add a transaction
+    function addTransaction() {
+      const type = document.getElementById('txType').value;
+      const asset = document.getElementById('txAsset').value;
+      const amount = D(document.getElementById('txAmount').value || 0);
+      const price = D(document.getElementById('txPrice').value || 0);
+      const fee = D(document.getElementById('txFee').value || 0);
+      const feeCurrency = document.getElementById('txFeeCurrency').value;
+      let date = document.getElementById('txDate').value;
+      
+      // Validate inputs
+      if (amount.lte(0) || price.lte(0)) {
+        showToast('Please enter valid amount and price', 'error');
+        return;
+      }
+      
+      // Set default date if not provided
+      if (!date) {
+        date = new Date().toISOString().slice(0, 16);
+      }
+      
+      // Calculate order value
+      const orderValue = amount.times(price);
+      
+      // Calculate fee in USDT
+      let feeInUSDT = D(0);
+      if (fee.gt(0)) {
+        if (feeCurrency === 'USDT') {
+          feeInUSDT = fee;
+        } else {
+          feeInUSDT = fee.times(getCurrentPrice(feeCurrency));
+        }
+      }
+      
+      // Calculate profit/loss (will be updated when matching buys/sells)
+      const profitLoss = D(0);
+      
+      // Create transaction
+      const tx = {
+        id: uid('tx'),
+        date,
+        type,
+        asset,
+        amount,
+        price,
+        orderValue,
+        fee,
+        feeCurrency,
+        feeInUSDT,
+        profitLoss
+      };
+      
+      // Add to store
+      store.transactions.push(tx);
+      saveStore();
+      
+      // Update UI
+      renderTransactions();
+      updatePortfolioDisplay();
+      
+      // Clear form
+      document.getElementById('txAmount').value = '';
+      document.getElementById('txPrice').value = '';
+      document.getElementById('txFee').value = '0';
+      
+      showToast('Transaction added successfully', 'success');
+    }
+
+    // Fetch price data from APIs
+    async function fetchPriceData() {
+      const apis = [
+        {
+          name: 'coingecko',
+          url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true',
+          parser: (data) => ({
+            bitcoin: { usd: data.bitcoin.usd, usd_24h_change: data.bitcoin.usd_24h_change },
+            ethereum: { usd: data.ethereum.usd, usd_24h_change: data.ethereum.usd_24h_change },
+            solana: { usd: data.solana.usd, usd_24h_change: data.solana.usd_24h_change }
+          })
+        },
+        {
+          name: 'cryptocompare',
+          url: 'https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC,ETH,SOL&tsyms=USD',
+          parser: (data) => ({
+            bitcoin: { 
+              usd: data.RAW.BTC.USD.PRICE, 
+              usd_24h_change: data.RAW.BTC.USD.CHANGEPCT24HOUR 
+            },
+            ethereum: { 
+              usd: data.RAW.ETH.USD.PRICE, 
+              usd_24h_change: data.RAW.ETH.USD.CHANGEPCT24HOUR 
+            },
+            solana: { 
+              usd: data.RAW.SOL.USD.PRICE, 
+              usd_24h_change: data.RAW.SOL.USD.CHANGEPCT24HOUR 
+            }
+          })
+        },
+        {
+          name: 'bitstamp',
+          url: 'https://www.bitstamp.net/api/v2/ticker/btcusd/',
+          parser: (data) => ({
+            bitcoin: { 
+              usd: parseFloat(data.last), 
+              usd_24h_change: ((parseFloat(data.last) - parseFloat(data.open)) / parseFloat(data.open)) * 100 
+            }
+          })
+        },
+        {
+          name: 'coinpaprika',
+          url: 'https://api.coinpaprika.com/v1/tickers/btc-bitcoin',
+          parser: (data) => ({
+            bitcoin: { 
+              usd: data.quotes.USD.price, 
+              usd_24h_change: data.quotes.USD.percent_change_24h 
+            }
+          })
+        }
+      ];
+      
+      let success = false;
+      
+      for (const api of apis) {
+        try {
+          const response = await fetch(api.url);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          
+          const data = await response.json();
+          const parsedData = api.parser(data);
+          
+          // Update price data
+          Object.keys(parsedData).forEach(key => {
+            if (parsedData[key].usd) {
+              priceData[key] = parsedData[key];
+            }
+          });
+          
+          apiStatus[api.name] = 'success';
+          success = true;
+          break;
+        } catch (error) {
+          console.error(`Failed to fetch from ${api.name}:`, error);
+          apiStatus[api.name] = 'error';
+        }
+      }
+      
+      // Update API status display
+      updateApiStatus(success);
+      
+      // Update price displays
+      updatePriceDisplays();
+      
+      // Update portfolio with new prices
+      updatePortfolioDisplay();
+      
+      // Start refresh countdown
+      startRefreshCountdown();
+    }
+
+    // Update API status display
+    function updateApiStatus(success) {
+      const statusDot = document.getElementById('apiStatus');
+      const statusText = document.getElementById('apiStatusText');
+      
+      if (success) {
+        statusDot.className = 'status-dot';
+        statusText.textContent = 'Live prices connected';
+        apiStatus.current = 'success';
+      } else {
+        statusDot.className = 'status-dot error';
+        statusText.textContent = 'Price API connection failed';
+        apiStatus.current = 'error';
+      }
+    }
+
+    // Update price displays
+    function updatePriceDisplays() {
+      // BTC
+      const btcPrice = document.getElementById('btcPrice');
+      const btcChange = document.getElementById('btcChange');
+      
+      if (priceData.bitcoin.usd) {
+        btcPrice.textContent = `$${formatNumber(priceData.bitcoin.usd, 2)}`;
+        const change = priceData.bitcoin.usd_24h_change || 0;
+        btcChange.textContent = `(${change >= 0 ? '+' : ''}${formatNumber(change, 2)}%)`;
+        btcChange.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
+      }
+      
+      // ETH
+      const ethPrice = document.getElementById('ethPrice');
+      const ethChange = document.getElementById('ethChange');
+      
+      if (priceData.ethereum.usd) {
+        ethPrice.textContent = `$${formatNumber(priceData.ethereum.usd, 2)}`;
+        const change = priceData.ethereum.usd_24h_change || 0;
+        ethChange.textContent = `(${change >= 0 ? '+' : ''}${formatNumber(change, 2)}%)`;
+        ethChange.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
+      }
+      
+      // SOL
+      const solPrice = document.getElementById('solPrice');
+      const solChange = document.getElementById('solChange');
+      
+      if (priceData.solana.usd) {
+        solPrice.textContent = `$${formatNumber(priceData.solana.usd, 2)}`;
+        const change = priceData.solana.usd_24h_change || 0;
+        solChange.textContent = `(${change >= 0 ? '+' : ''}${formatNumber(change, 2)}%)`;
+        solChange.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
+      }
+    }
+
+    // Start refresh countdown
+    function startRefreshCountdown() {
+      refreshCountdown = 30;
+      
+      if (refreshTimer) clearInterval(refreshTimer);
+      
+      refreshTimer = setInterval(() => {
+        refreshCountdown--;
+        document.getElementById('refreshTimer').textContent = `${refreshCountdown}s`;
+        
+        if (refreshCountdown <= 0) {
+          clearInterval(refreshTimer);
+          fetchPriceData();
+        }
+      }, 1000);
+    }
+
+    // Calculate trade
+    function calculateTrade() {
+      const mode = document.getElementById('tpSlBtn').classList.contains('active') ? 'tpSl' : 'trailing';
+      const asset = document.getElementById('asset').value;
+      const entryPrice = D(document.getElementById('entryPrice').value || 0);
+      const amount = D(document.getElementById('amount').value || 0);
+      const targetProfit = D(document.getElementById('targetProfit').value || 0);
+      const maxCapitalLoss = D(document.getElementById('maxCapitalLoss').value || 100);
+      
+      if (entryPrice.lte(0) || amount.lte(0)) {
+        showToast('Please enter valid entry price and amount', 'error');
+        return;
+      }
+      
+      const totalCapital = entryPrice.mul(amount);
+      
+      if (mode === 'tpSl') {
+        // Calculate TP/SL
+        const tpPrice = entryPrice.plus(targetProfit.div(amount));
+        const slPrice = entryPrice.minus(maxCapitalLoss.div(amount));
+        
+        const potentialProfit = targetProfit;
+        const potentialLoss = maxCapitalLoss;
+        const capitalIfSL = totalCapital.minus(maxCapitalLoss);
+        const roi = targetProfit.div(totalCapital).mul(100);
+        const rrRatio = potentialProfit.div(potentialLoss);
+        
+        // Update UI
+        document.getElementById('capitalValue').textContent = `$${formatNumber(totalCapital, 2)}`;
+        document.getElementById('tpPrice').textContent = `$${formatNumber(tpPrice, 2)}`;
+        document.getElementById('slPrice').textContent = `$${formatNumber(slPrice, 2)}`;
+        document.getElementById('potentialProfit').textContent = `+$${formatNumber(potentialProfit, 2)}`;
+        document.getElementById('potentialLoss').textContent = `-$${formatNumber(potentialLoss, 2)}`;
+        document.getElementById('capitalIfSL').textContent = `$${formatNumber(capitalIfSL, 2)}`;
+        document.getElementById('roiValue').textContent = `${formatNumber(roi, 2)}%`;
+        document.getElementById('rrRatio').textContent = `1:${formatNumber(rrRatio, 2)}`;
+        
+        document.getElementById('tpSlResult').style.display = 'block';
+        document.getElementById('trailingResult').style.display = 'none';
+      } else {
+        // Calculate trailing stop
+        const trailingDistance = D(document.getElementById('trailingDistance').value || 0);
+        
+        if (trailingDistance.lte(0)) {
+          showToast('Please enter a valid trailing distance', 'error');
+          return;
+        }
+        
+        const tpPrice = entryPrice.plus(targetProfit.div(amount));
+        const activationPrice = entryPrice.plus(trailingDistance.div(amount));
+        const trailingStopPrice = activationPrice.minus(trailingDistance.div(amount));
+        const slPrice = entryPrice.minus(maxCapitalLoss.div(amount));
+        
+        const potentialProfit = targetProfit;
+        const potentialLoss = maxCapitalLoss;
+        const capitalIfSL = totalCapital.minus(maxCapitalLoss);
+        const securedProfit = trailingDistance;
+        const roi = targetProfit.div(totalCapital).mul(100);
+        const rrRatio = potentialProfit.div(potentialLoss);
+        
+        // Update UI
+        document.getElementById('trailingCapital').textContent = `$${formatNumber(totalCapital, 2)}`;
+        document.getElementById('trailingTP').textContent = `$${formatNumber(tpPrice, 2)}`;
+        document.getElementById('trailingSL').textContent = `$${formatNumber(slPrice, 2)}`;
+        document.getElementById('activationPrice').textContent = `$${formatNumber(activationPrice, 2)}`;
+        document.getElementById('trailingStopPrice').textContent = `$${formatNumber(trailingStopPrice, 2)}`;
+        document.getElementById('trailingProfit').textContent = `+$${formatNumber(potentialProfit, 2)}`;
+        document.getElementById('trailingLoss').textContent = `-$${formatNumber(potentialLoss, 2)}`;
+        document.getElementById('trailingCapitalSL').textContent = `$${formatNumber(capitalIfSL, 2)}`;
+        document.getElementById('securedProfit').textContent = `+$${formatNumber(securedProfit, 2)}`;
+        document.getElementById('trailingROI').textContent = `${formatNumber(roi, 2)}%`;
+        document.getElementById('trailingRR').textContent = `1:${formatNumber(rrRatio, 2)}`;
+        
+        document.getElementById('tpSlResult').style.display = 'none';
+        document.getElementById('trailingResult').style.display = 'block';
+      }
+    }
+
+    // Update tablet mode
+    function updateTabletMode() {
+      if (store.settings.tabletMode) {
+        document.body.classList.add('tablet-mode');
+      } else {
+        document.body.classList.remove('tablet-mode');
+      }
+    }
+
+    // Initialize the application
+    function init() {
+      // Load stored data
+      loadStore();
+      
+      // Set up event listeners
+      document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const section = this.getAttribute('data-section');
+          
+          // Update active menu item
+          document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Show selected section
+          document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+          document.getElementById(section).classList.add('active');
+          
+          // Close dropdown
+          document.querySelector('.dropdown-menu').classList.remove('show');
+        });
+      });
+      
+      // Hamburger menu toggle
+      document.querySelector('.hamburger-btn').addEventListener('click', function() {
+        document.querySelector('.dropdown-menu').classList.toggle('show');
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        if (!event.target.closest('.hamburger-menu')) {
+          document.querySelector('.dropdown-menu').classList.remove('show');
+        }
+      });
+      
+      // Trade planner mode toggle
+      document.getElementById('tpSlBtn').addEventListener('click', function() {
+        document.getElementById('tpSlBtn').classList.add('active');
+        document.getElementById('trailingBtn').classList.remove('active');
+        document.getElementById('trailingInput').style.display = 'none';
+      });
+      
+      document.getElementById('trailingBtn').addEventListener('click', function() {
+        document.getElementById('trailingBtn').classList.add('active');
+        document.getElementById('tpSlBtn').classList.remove('active');
+        document.getElementById('trailingInput').style.display = 'block';
+      });
+      
+      // Add transaction button
+      document.getElementById('addTransaction').addEventListener('click', addTransaction);
+      
+      // Auto-fill current price when asset changes in trade planner
+      document.getElementById('asset').addEventListener('change', function() {
+        const asset = this.value;
+        const entryPriceInput = document.getElementById('entryPrice');
+        
+        if (asset === 'bitcoin') {
+          entryPriceInput.value = priceData.bitcoin.usd || '';
+        } else if (asset === 'ethereum') {
+          entryPriceInput.value = priceData.ethereum.usd || '';
+        } else if (asset === 'solana') {
+          entryPriceInput.value = priceData.solana.usd || '';
+        }
+      });
+      
+      // Export CSV
+      document.getElementById('exportCsv').addEventListener('click', function() {
+        if (store.transactions.length === 0) {
+          showToast('No transactions to export', 'error');
+          return;
+        }
+        
+        const headers = ['Date', 'Type', 'Asset', 'Amount', 'Price', 'Order Value', 'Fee', 'Fee Currency', 'Fee (USDT)', 'P/L'];
+        const csvContent = [
+          headers.join(','),
+          ...store.transactions.map(tx => [
+            tx.date,
+            tx.type,
+            tx.asset,
+            tx.amount.toString(),
+            tx.price.toString(),
+            tx.orderValue.toString(),
+            tx.fee.toString(),
+            tx.feeCurrency,
+            tx.feeInUSDT.toString(),
+            tx.profitLoss.toString()
+          ].join(','))
+        ].join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'crypto-suite-transactions.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        showToast('CSV exported successfully', 'success');
+      });
+      
+      // Export JSON
+      document.getElementById('exportJson').addEventListener('click', function() {
+        if (store.transactions.length === 0) {
+          showToast('No transactions to export', 'error');
+          return;
+        }
+        
+        const dataStr = JSON.stringify(store, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'crypto-suite-data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        showToast('JSON exported successfully', 'success');
+      });
+      
+      // Import data
+      document.getElementById('importBtn').addEventListener('click', function() {
+        document.getElementById('importFile').click();
+      });
+      
+      document.getElementById('importFile').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const importedData = JSON.parse(e.target.result);
+            
+            // Validate imported data structure
+            if (!importedData.transactions || !Array.isArray(importedData.transactions)) {
+              throw new Error('Invalid data format');
+            }
+            
+            // Replace current store with imported data
+            store = importedData;
+            
+            // Convert string values back to Decimal
+            store.transactions = store.transactions.map(tx => ({
+              ...tx,
+              amount: D(tx.amount),
+              price: D(tx.price),
+              orderValue: D(tx.orderValue),
+              fee: D(tx.fee),
+              feeInUSDT: D(tx.feeInUSDT || 0),
+              profitLoss: D(tx.profitLoss || 0)
+            }));
+            
+            // Save and update UI
+            saveStore();
+            renderTransactions();
+            updatePortfolioDisplay();
+            
+            showToast('Data imported successfully', 'success');
+          } catch (error) {
+            console.error('Import error:', error);
+            showToast('Failed to import data. Invalid format.', 'error');
+          }
+        };
+        reader.readAsText(file);
+        
+        // Reset file input
+        event.target.value = '';
+      });
+      
+      // Reset storage
+      document.getElementById('resetStore').addEventListener('click', function() {
+        if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+          localStorage.removeItem(STORAGE_KEY);
+          initializeDefaultStore();
+          renderTransactions();
+          updatePortfolioDisplay();
+          showToast('All data has been reset', 'success');
+        }
+      });
+      
+      // Backup data
+      document.getElementById('backupData').addEventListener('click', function() {
+        const dataStr = JSON.stringify(store, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'crypto-suite-backup.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        showToast('Backup created successfully', 'success');
+      });
+      
+      // Clear storage
+      document.getElementById('clearStorage').addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear all stored data? This cannot be undone.')) {
+          localStorage.clear();
+          initializeDefaultStore();
+          renderTransactions();
+          updatePortfolioDisplay();
+          showToast('All stored data has been cleared', 'success');
+        }
+      });
+      
+      // Tablet mode toggle
+      document.getElementById('tabletModeToggle').addEventListener('change', function() {
+        store.settings.tabletMode = this.checked;
+        saveStore();
+        updateTabletMode();
+      });
+      
+      // Set current date as default
+      document.getElementById('txDate').value = new Date().toISOString().slice(0, 16);
+      
+      // Initial UI updates
+      renderTransactions();
+      updatePortfolioDisplay();
+      updateTabletMode();
+      
+      // Fetch initial price data
+      fetchPriceData();
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
