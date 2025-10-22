@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Suite - Executive Trading Platform</title>
+  <script src="https://cdn.jsdelivr.net/npm/decimal.js@10/decimal.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --accent: #06b6d4;
+      --accent-light: #22d3ee;
+      --muted: #94a3b8;
+      --glass: rgba(255,255,255,0.03);
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text: #e6eef6;
+      --border: rgba(255,255,255,0.05);
+    }
+    
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #071126 0%, #071727 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Header and Navigation */
+    header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 100;
+    }
+    
+    .logo {
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .hamburger-menu {
+      position: relative;
+    }
+    
+    .hamburger-btn {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+    
+    .hamburger-btn:hover {
+      background: var(--glass);
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      padding: 0.5rem;
+      min-width: 180px;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .dropdown-menu.show {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    .dropdown-item {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .dropdown-item:hover {
+      background: var(--glass);
+    }
+    
+    .dropdown-item.active {
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--accent);
+    }
+    
+    /* Main Container */
+    .main-container {
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .card {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
+    }
+    
+    .card-title {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .card-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+    
+    .card-value.positive {
+      color: var(--success);
+    }
+    
+    .card-value.negative {
+      color: var(--danger);
+    }
+    
+    /* Content Sections */
+    .content-section {
+      display: none;
+    }
+    
+    .content-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    /* Journal Section */
+    .journal-section .card {
+      margin-bottom: 1.5rem;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: inherit;
+      padding: 1rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s ease;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+    }
+    
+    .row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    
+    button {
+      background: var(--accent);
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      color: #042028;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    button:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+    }
+    
+    button.danger {
+      background: var(--danger);
+      color: white;
+    }
+    
+    button.danger:hover {
+      background: #f87171;
+    }
+    
+    button.success {
+      background: var(--success);
+      color: white;
+    }
+    
+    button.success:hover {
+      background: #34d399;
+    }
+    
+    input, select {
+      padding: 0.75rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--glass);
+      color: inherit;
+      transition: border-color 0.2s ease;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 0.95rem;
+    }
+    
+    th {
+      color: var(--muted);
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    .muted {
+      color: var(--muted);
+    }
+    
+    .small {
+      font-size: 0.9rem;
+    }
+    
+    .table-scroll {
+      max-height: 400px;
+      overflow: auto;
+      border-radius: 8px;
+      margin: 0.5rem 0;
+    }
+    
+    /* Trade Planner Section */
+    .mode-selector {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      background: var(--card);
+      border: none;
+      color: var(--text);
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 0 5px;
+    }
+    
+    .mode-btn.active {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .input-section {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--accent);
+    }
+    
+    .section-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      color: var(--text);
+    }
+    
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-size: 14px;
+    }
+    
+    .result-section {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+    
+    .result-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: var(--text);
+      font-size: 18px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 12px 0;
+    }
+    
+    .result-label {
+      font-weight: 500;
+    }
+    
+    .result-value {
+      font-weight: bold;
+    }
+    
+    .profit {
+      color: var(--success);
+    }
+    
+    .loss {
+      color: var(--danger);
+    }
+    
+    .warning {
+      color: var(--warning);
+    }
+    
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 15px 0;
+    }
+    
+    /* Settings Section */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: var(--glass);
+      border-radius: 10px;
+    }
+    
+    .toggle-label {
+      font-weight: 500;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+      background-color: var(--accent);
+    }
+    
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      background: var(--card);
+      border-left: 4px solid var(--accent);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast.success {
+      border-left-color: var(--success);
+    }
+    
+    .toast.error {
+      border-left-color: var(--danger);
+    }
+    
+    /* Price Ticker */
+    .price-ticker {
+      display: flex;
+      overflow: hidden;
+      background: var(--card);
+      border-radius: 8px;
+      padding: 0.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+    }
+    
+    .price-item {
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      border-right: 1px solid var(--border);
+    }
+    
+    .price-item:last-child {
+      border-right: none;
+    }
+    
+    .price-symbol {
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+    
+    .price-value {
+      margin-right: 0.5rem;
+    }
+    
+    .price-change {
+      font-size: 0.85rem;
+    }
+    
+    .price-change.positive {
+      color: var(--success);
+    }
+    
+    .price-change.negative {
+      color: var(--danger);
+    }
+    
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      color: var(--muted);
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+    
+    .status-dot.warning {
+      background: var(--warning);
+    }
+    
+    .status-dot.error {
+      background: var(--danger);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 1rem;
+      }
+      
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      
+      .row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .row button, .row select, .row input {
+        width: 100%;
+      }
+      
+      .price-ticker {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      
+      .price-item {
+        border-right: none;
+        padding: 0.25rem 0.5rem;
+      }
+    }
+    
+    /* Tablet Mode */
+    .tablet-mode .main-container {
+      max-width: 100%;
+      padding: 1rem;
+    }
+    
+    .tablet-mode .dashboard {
+      grid-template-columns: 1fr;
+    }
+    
+    .tablet-mode .card {
+      padding: 1rem;
+    }
+    
+    .tablet-mode .row {
+      flex-direction: column;
+    }
+    
+    .tablet-mode .row button, 
+    .tablet-mode .row select, 
+    .tablet-mode .row input {
+      width: 100%;
+    }
+
+    /* Trade Cycle Status */
+    .trade-status {
+      background: var(--glass);
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--accent);
+    }
+
+    .trade-status.active {
+      border-left-color: var(--success);
+    }
+
+    .trade-status.completed {
+      border-left-color: var(--muted);
+    }
+
+    /* P/L Indicators */
+    .pl-indicator {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+
+    .pl-positive {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+
+    .pl-negative {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hamburger-menu">
+      <button class="hamburger-btn">☰</button>
+      <div class="dropdown-menu">
+        <div class="dropdown-item active" data-section="dashboard">📊 Dashboard</div>
+        <div class="dropdown-item" data-section="trade-planner">📈 Trade Planner</div>
+        <div class="dropdown-item" data-section="journal">📝 Journal</div>
+        <div class="dropdown-item" data-section="settings">⚙️ Settings</div>
+      </div>
+    </div>
+    <div class="logo">Crypto Suite</div>
+  </header>
+
+  <div class="main-container">
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="content-section active">
+      <!-- Trade Status -->
+      <div class="trade-status" id="tradeStatus">
+        <div class="result-row">
+          <span class="result-label">🔄 Trade Cycle Status:</span>
+          <span class="result-value" id="tradeCycleStatus">No active trade</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">⏱️ Current Trade Duration:</span>
+          <span class="result-value" id="tradeDuration">-</span>
+        </div>
+        <div class="row">
+          <button id="completeTrade" class="success" style="display: none;">✅ Complete Trade Cycle</button>
+          <button id="newTrade" class="success">🔄 Start New Trade Cycle</button>
+        </div>
+      </div>
+
+      <!-- Price Ticker -->
+      <div class="price-ticker">
+        <div class="price-item">
+          <span class="price-symbol">BTC:</span>
+          <span class="price-value" id="btcPrice">Loading...</span>
+          <span class="price-change" id="btcChange">(0.00%)</span>
+        </div>
+        <div class="price-item">
+          <span class="price-symbol">ETH:</span>
+          <span class="price-value" id="ethPrice">Loading...</span>
+          <span class="price-change" id="ethChange">(0.00%)</span>
+        </div>
+        <div class="price-item">
+          <span class="price-symbol">SOL:</span>
+          <span class="price-value" id="solPrice">Loading...</span>
+          <span class="price-change" id="solChange">(0.00%)</span>
+        </div>
+        <div class="api-status">
+          <span class="status-dot" id="apiStatus"></span>
+          <span id="apiStatusText">Connecting to Bybit API...</span>
+        </div>
+      </div>
+      
+      <div class="dashboard">
+        <div class="card">
+          <div class="card-title">💰 Total Assets</div>
+          <div class="card-value" id="portfolioValue">$0.00</div>
+          <div class="small muted" id="portfolioChange">No transactions yet</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📈 Realized P/L</div>
+          <div class="card-value" id="realizedPl">$0.00</div>
+          <div class="small muted" id="realizedPlChange">
+            <span id="realizedPlPeriod">All time</span>
+            <span id="realizedPlIndicator" class="pl-indicator" style="display: none;"></span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">💼 Current Trade Capital</div>
+          <div class="card-value" id="currentTradeCapital">$0.00</div>
+          <div class="small muted" id="capitalChange">No active trade</div>
+        </div>
+        <div class="card">
+          <div class="card-title">💸 Total Fees</div>
+          <div class="card-value" id="totalFees">$0.00</div>
+          <div class="small muted" id="feesChange">All time</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem">
+        <h3>📊 Current Holdings</h3>
+        <div id="holdingsList" class="small muted">
+          No holdings yet. Add transactions to see your portfolio.
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem">
+        <h3>📋 Recent Trade Cycles</h3>
+        <div id="tradeCyclesList" class="small muted">
+          No completed trade cycles yet.
+        </div>
+      </div>
+    </section>
+
+    <!-- Trade Planner Section -->
+    <section id="trade-planner" class="content-section">
+      <div class="card">
+        <h3>📈 Trade Planner</h3>
+        
+        <div class="mode-selector">
+          <button class="mode-btn active" id="tpSlBtn">📊 TP/SL Mode</button>
+          <button class="mode-btn" id="trailingBtn">📉 Trailing Stop Mode</button>
+        </div>
+
+        <div class="input-section">
+          <div class="section-title">🔹 Trade Parameters</div>
+          
+          <label>Select Asset</label>
+          <select id="asset">
+            <option value="BTC">Bitcoin (BTC)</option>
+            <option value="ETH">Ethereum (ETH)</option>
+            <option value="SOL">Solana (SOL)</option>
+          </select>
+
+          <label>Entry Price ($)</label>
+          <input type="number" id="entryPrice" step="0.000001" placeholder="e.g. 50000">
+
+          <label>Amount (Asset Units)</label>
+          <input type="number" id="amount" step="0.000001" placeholder="e.g. 0.5">
+
+          <label>Target Profit ($)</label>
+          <input type="number" id="targetProfit" step="0.000001" placeholder="e.g. 1000">
+
+          <label>Maximum Capital Loss ($)</label>
+          <input type="number" id="maxCapitalLoss" step="0.000001" placeholder="e.g. 500" value="100">
+          
+          <div id="trailingInput" style="display: none;">
+            <label>Trailing Stop Distance ($)</label>
+            <input type="number" id="trailingDistance" step="0.000001" placeholder="e.g. 200">
+          </div>
+        </div>
+
+        <button onclick="calculateTrade()">💹 Calculate Trade</button>
+
+        <div class="result-section" id="tpSlResult">
+          <div class="result-title">📊 TP/SL Results</div>
+          
+          <div class="result-row">
+            <span class="result-label">💰 Total Capital:</span>
+            <span class="result-value" id="capitalValue">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🎯 Take Profit Price:</span>
+            <span class="result-value" id="tpPrice">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🛑 Stop Loss Price:</span>
+            <span class="result-value" id="slPrice">$0.00</span>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="result-row">
+            <span class="result-label">📈 Potential Profit:</span>
+            <span class="result-value profit" id="potentialProfit">+$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">📉 Potential Loss:</span>
+            <span class="result-value loss" id="potentialLoss">-$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">⚠️ Capital if SL Hits:</span>
+            <span class="result-value warning" id="capitalIfSL">$0.00</span>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="result-row">
+            <span class="result-label">📊 ROI:</span>
+            <span class="result-value" id="roiValue">0%</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">⚖️ Risk/Reward:</span>
+            <span class="result-value" id="rrRatio">1:0</span>
+          </div>
+        </div>
+
+        <div class="result-section" id="trailingResult">
+          <div class="result-title">📉 Trailing Stop Results</div>
+          
+          <div class="result-row">
+            <span class="result-label">💰 Total Capital:</span>
+            <span class="result-value" id="trailingCapital">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🎯 Take Profit Price:</span>
+            <span class="result-value" id="trailingTP">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🛑 Stop Loss Price:</span>
+            <span class="result-value" id="trailingSL">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">📌 Activation Price:</span>
+            <span class="result-value" id="activationPrice">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🔄 Trailing Stop Price:</span>
+            <span class="result-value" id="trailingStopPrice">$0.00</span>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="result-row">
+            <span class="result-label">📈 Potential Profit:</span>
+            <span class="result-value profit" id="trailingProfit">+$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">📉 Potential Loss:</span>
+            <span class="result-value loss" id="trailingLoss">-$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">⚠️ Capital if SL Hits:</span>
+            <span class="result-value warning" id="trailingCapitalSL">$0.00</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">🔒 Secured Profit:</span>
+            <span class="result-value profit" id="securedProfit">+$0.00</span>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="result-row">
+            <span class="result-label">📊 ROI:</span>
+            <span class="result-value" id="trailingROI">0%</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">⚖️ Risk/Reward:</span>
+            <span class="result-value" id="trailingRR">1:0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Journal Section -->
+    <section id="journal" class="content-section">
+      <div class="card">
+        <h3>📥 Add Transaction</h3>
+        <div class="small muted">Add your buy/sell transactions manually</div>
+        
+        <div class="row">
+          <select id="txType">
+            <option value="BUY">BUY</option>
+            <option value="SELL">SELL</option>
+          </select>
+          <select id="txAsset">
+            <option value="BTC">BTC</option>
+            <option value="ETH">ETH</option>
+            <option value="SOL">SOL</option>
+            <option value="USDT">USDT</option>
+          </select>
+        </div>
+        
+        <div class="row">
+          <input type="number" id="txAmount" placeholder="Amount" step="0.000001">
+          <input type="number" id="txPrice" placeholder="Price per unit ($)" step="0.000001">
+        </div>
+        
+        <div class="row">
+          <input type="number" id="txFee" placeholder="Fee" step="0.000001" value="0">
+          <select id="txFeeCurrency">
+            <option value="USDT">USDT</option>
+            <option value="BTC">BTC</option>
+            <option value="ETH">ETH</option>
+            <option value="SOL">SOL</option>
+          </select>
+        </div>
+        
+        <div class="row">
+          <input type="datetime-local" id="txDate">
+          <button id="addTransaction" class="success">➕ Add Transaction</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem">
+        <h3>📋 Transactions</h3>
+        <div class="table-scroll">
+          <table id="txTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Asset</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Value</th>
+                <th>Fee</th>
+                <th>P/L</th>
+                <th>Trade Cycle</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="txTableBody">
+              <!-- Transactions will be populated here -->
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top: 1rem" class="row">
+          <button id="exportCsv">📊 Export CSV</button>
+          <button id="exportJson">💾 Export JSON</button>
+          <input type="file" id="importFile" accept=".json" style="display: none;" />
+          <button id="importBtn">📤 Import</button>
+          <button id="resetStore" class="danger">🔄 Reset Storage</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Section -->
+    <section id="settings" class="content-section">
+      <div class="settings-grid">
+        <div class="card">
+          <h3>🔄 Toggles</h3>
+          <div class="toggle-container">
+            <div class="toggle-label">Tablet Mode ↔ Desktop Mode</div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="tabletModeToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>💾 Data Management</h3>
+          <div class="row">
+            <button id="backupData" class="success">📥 Backup Data</button>
+            <button id="clearStorage" class="danger">🗑️ Clear Storage</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toast notification element -->
+  <div id="toast" class="toast">
+    <span id="toastMessage"></span>
+  </div>
+
+  <script>
+    // Crypto Suite Application
+    const STORAGE_KEY = 'cryptoSuite_v9';
+    
+    // Bybit API Configuration
+    const BYBIT_API_KEY = 'IOp4ZMMB7M07A0NbzN';
+    const BYBIT_API_SECRET = 'CUKr2bsO2THcL9GhZeK1ekkbOzzBHUSEnuUm';
+    const BYBIT_BASE_URL = 'https://api.bybit.com';
+    
+    // Load or initialize store
+    let store = { 
+        transactions: [], 
+        settings: {
+            tabletMode: false
+        },
+        // Track trade cycles
+        tradeCycles: [],
+        currentTrade: {
+            originalCapital: D(0),
+            startTime: null,
+            transactions: [],
+            isActive: false,
+            // Track current cycle realized P/L
+            cycleRealizedPL: D(0)
+        },
+        // Track dashboard display state
+        dashboardState: {
+            realizedPLDisplay: 'allTime', // 'allTime' or 'currentCycle'
+            lastCyclePL: D(0)
+        }
+    };
+    
+    // Price data storage
+    let priceData = {
+        BTC: { price: 0, change24h: 0 },
+        ETH: { price: 0, change24h: 0 },
+        SOL: { price: 0, change24h: 0 }
+    };
+    
+    // WebSocket connection for real-time data
+    let wsConnection = null;
+    
+    // Trade duration timer
+    let tradeTimer = null;
+    
+    // Decimal.js convenience function
+    function D(v) { 
+        try { 
+            if (v instanceof Decimal) return v;
+            return new Decimal(v || 0); 
+        } catch(e) { 
+            console.error("Decimal conversion error:", e, "value:", v);
+            return new Decimal(0); 
+        } 
+    }
+
+    // Format numbers with commas and fixed decimals
+    function formatNumber(value, decimals = 8) {
+        const num = typeof value === 'string' ? parseFloat(value) : value;
+        if (isNaN(num)) return '0';
+        
+        return new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: decimals
+        }).format(num);
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        toastMessage.textContent = message;
+        toast.className = `toast ${type} show`;
+        
+        setTimeout(() => {
+            toast.className = 'toast';
+        }, 3000);
+    }
+
+    // Save store to localStorage
+    function saveStore() { 
+        // Convert Decimal objects to strings before saving
+        const storeToSave = {
+            ...store,
+            transactions: store.transactions.map(tx => ({
+                ...tx,
+                amount: tx.amount.toString(),
+                price: tx.price.toString(),
+                orderValue: tx.orderValue.toString(),
+                fee: tx.fee.toString(),
+                feeInUSDT: tx.feeInUSDT.toString(),
+                profitLoss: tx.profitLoss.toString()
+            })),
+            // Save trade cycles and current trade
+            tradeCycles: store.tradeCycles.map(cycle => ({
+                ...cycle,
+                originalCapital: cycle.originalCapital.toString(),
+                realizedPL: cycle.realizedPL.toString(),
+                totalFees: cycle.totalFees.toString(),
+                startTime: cycle.startTime,
+                endTime: cycle.endTime
+            })),
+            currentTrade: {
+                ...store.currentTrade,
+                originalCapital: store.currentTrade.originalCapital.toString(),
+                cycleRealizedPL: store.currentTrade.cycleRealizedPL.toString(),
+                transactions: store.currentTrade.transactions,
+                startTime: store.currentTrade.startTime,
+                isActive: store.currentTrade.isActive
+            },
+            dashboardState: {
+                ...store.dashboardState,
+                lastCyclePL: store.dashboardState.lastCyclePL.toString()
+            }
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(storeToSave)); 
+    }
+
+    // Load store from localStorage
+    function loadStore() { 
+        const s = localStorage.getItem(STORAGE_KEY); 
+        if (s) { 
+            try { 
+                const parsed = JSON.parse(s);
+                store = parsed;
+                
+                // Convert string values back to Decimal
+                store.transactions = store.transactions.map(tx => ({
+                    ...tx,
+                    amount: D(tx.amount),
+                    price: D(tx.price),
+                    orderValue: D(tx.orderValue),
+                    fee: D(tx.fee),
+                    feeInUSDT: D(tx.feeInUSDT || 0),
+                    profitLoss: D(tx.profitLoss || 0)
+                }));
+                
+                // Convert trade cycles
+                if (store.tradeCycles) {
+                    store.tradeCycles = store.tradeCycles.map(cycle => ({
+                        ...cycle,
+                        originalCapital: D(cycle.originalCapital),
+                        realizedPL: D(cycle.realizedPL),
+                        totalFees: D(cycle.totalFees),
+                        startTime: cycle.startTime,
+                        endTime: cycle.endTime
+                    }));
+                } else {
+                    store.tradeCycles = [];
+                }
+                
+                // Convert current trade
+                if (store.currentTrade) {
+                    store.currentTrade = {
+                        ...store.currentTrade,
+                        originalCapital: D(store.currentTrade.originalCapital || 0),
+                        cycleRealizedPL: D(store.currentTrade.cycleRealizedPL || 0),
+                        transactions: store.currentTrade.transactions || [],
+                        startTime: store.currentTrade.startTime,
+                        isActive: store.currentTrade.isActive || false
+                    };
+                } else {
+                    store.currentTrade = {
+                        originalCapital: D(0),
+                        cycleRealizedPL: D(0),
+                        startTime: null,
+                        transactions: [],
+                        isActive: false
+                    };
+                }
+                
+                // Convert dashboard state
+                if (store.dashboardState) {
+                    store.dashboardState = {
+                        realizedPLDisplay: store.dashboardState.realizedPLDisplay || 'allTime',
+                        lastCyclePL: D(store.dashboardState.lastCyclePL || 0)
+                    };
+                } else {
+                    store.dashboardState = {
+                        realizedPLDisplay: 'allTime',
+                        lastCyclePL: D(0)
+                    };
+                }
+                
+                // Initialize settings if they don't exist
+                if (!store.settings) {
+                    store.settings = {
+                        tabletMode: false
+                    };
+                }
+                
+                // Update UI to reflect stored settings
+                if (document.getElementById('tabletModeToggle')) {
+                    document.getElementById('tabletModeToggle').checked = store.settings.tabletMode;
+                    updateTabletMode();
+                }
+                
+            } catch(e) { 
+                console.error('Parse error', e); 
+                initializeDefaultStore();
+            } 
+        } else { 
+            initializeDefaultStore();
+        } 
+    }
+
+    function initializeDefaultStore() {
+        store = { 
+            transactions: [], 
+            settings: {
+                tabletMode: false
+            },
+            tradeCycles: [],
+            currentTrade: {
+                originalCapital: D(0),
+                cycleRealizedPL: D(0),
+                startTime: null,
+                transactions: [],
+                isActive: false
+            },
+            dashboardState: {
+                realizedPLDisplay: 'allTime',
+                lastCyclePL: D(0)
+            }
+        };
+    }
+
+    // Generate unique ID
+    function uid(prefix = 'id') { 
+        return prefix + '_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36);
+    }
+
+    // Start a new trade cycle
+    function startNewTrade() {
+        // Store the previous cycle's P/L before resetting
+        if (store.currentTrade.isActive) {
+            store.dashboardState.lastCyclePL = store.currentTrade.cycleRealizedPL;
+        }
+        
+        store.currentTrade = {
+            originalCapital: D(0),
+            cycleRealizedPL: D(0),
+            startTime: new Date().toISOString(),
+            transactions: [],
+            isActive: true
+        };
+        
+        // Switch dashboard to show current cycle P/L
+        store.dashboardState.realizedPLDisplay = 'currentCycle';
+        
+        saveStore();
+        updateTradeStatus();
+        updateRealizedPLDisplay();
+        startTradeTimer();
+        showToast('New trade cycle started', 'success');
+    }
+
+    // Complete the current trade cycle
+    function completeTrade() {
+        if (!store.currentTrade.isActive) {
+            showToast('No active trade to complete', 'error');
+            return;
+        }
+
+        // Calculate final metrics for this trade cycle using FIFO
+        const tradeMetrics = calculateCurrentTradeCyclePL();
+        
+        // Update the current trade cycle P/L with the calculated value
+        store.currentTrade.cycleRealizedPL = tradeMetrics.realizedPL;
+        
+        // Create trade cycle record
+        const tradeCycle = {
+            id: uid('cycle'),
+            startTime: store.currentTrade.startTime,
+            endTime: new Date().toISOString(),
+            originalCapital: store.currentTrade.originalCapital,
+            realizedPL: store.currentTrade.cycleRealizedPL,
+            totalFees: tradeMetrics.totalFees,
+            transactionCount: store.currentTrade.transactions.length
+        };
+        
+        // Add to trade cycles history
+        store.tradeCycles.unshift(tradeCycle);
+        
+        // Store the completed cycle's P/L
+        store.dashboardState.lastCyclePL = store.currentTrade.cycleRealizedPL;
+        
+        // Reset current trade
+        store.currentTrade = {
+            originalCapital: D(0),
+            cycleRealizedPL: D(0),
+            startTime: null,
+            transactions: [],
+            isActive: false
+        };
+        
+        // Switch dashboard to show all-time P/L after completion
+        store.dashboardState.realizedPLDisplay = 'allTime';
+        
+        saveStore();
+        updateTradeStatus();
+        updateRealizedPLDisplay();
+        stopTradeTimer();
+        updateTradeCyclesList();
+        calculatePortfolio();
+        showToast('Trade cycle completed successfully', 'success');
+    }
+
+    // Calculate current trade cycle P/L using FIFO
+    function calculateCurrentTradeCyclePL() {
+        let realizedPL = D(0);
+        let totalFees = D(0);
+        
+        // Get transactions for current trade cycle
+        const currentCycleTxs = store.transactions.filter(tx => 
+            store.currentTrade.transactions.includes(tx.id)
+        ).sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // Create buy queue for FIFO calculation
+        const buyQueue = {};
+        
+        currentCycleTxs.forEach(tx => {
+            totalFees = totalFees.plus(tx.feeInUSDT);
+            
+            if (tx.type === 'BUY') {
+                // Add to buy queue
+                if (!buyQueue[tx.asset]) buyQueue[tx.asset] = [];
+                buyQueue[tx.asset].push({
+                    amount: tx.amount,
+                    price: tx.price
+                });
+                
+            } else if (tx.type === 'SELL') {
+                // FIFO matching for P/L calculation
+                let remainingSell = tx.amount;
+                let totalCostBasis = D(0);
+                
+                while (remainingSell.gt(0) && buyQueue[tx.asset] && buyQueue[tx.asset].length > 0) {
+                    const oldestBuy = buyQueue[tx.asset][0];
+                    
+                    if (oldestBuy.amount.lte(remainingSell)) {
+                        // Use entire oldest buy
+                        totalCostBasis = totalCostBasis.plus(oldestBuy.amount.times(oldestBuy.price));
+                        remainingSell = remainingSell.minus(oldestBuy.amount);
+                        buyQueue[tx.asset].shift();
+                    } else {
+                        // Use part of oldest buy
+                        totalCostBasis = totalCostBasis.plus(remainingSell.times(oldestBuy.price));
+                        oldestBuy.amount = oldestBuy.amount.minus(remainingSell);
+                        remainingSell = D(0);
+                    }
+                }
+                
+                // Calculate P/L for this sell
+                const sellValue = tx.amount.times(tx.price);
+                const pl = sellValue.minus(totalCostBasis);
+                realizedPL = realizedPL.plus(pl);
+            }
+        });
+        
+        return { realizedPL, totalFees };
+    }
+
+    // Update realized P/L display based on current state
+    function updateRealizedPLDisplay() {
+        const realizedPlElement = document.getElementById('realizedPl');
+        const realizedPlPeriodElement = document.getElementById('realizedPlPeriod');
+        const realizedPlIndicatorElement = document.getElementById('realizedPlIndicator');
+        
+        if (store.dashboardState.realizedPLDisplay === 'currentCycle' && store.currentTrade.isActive) {
+            // Show current cycle P/L - only show when trade is actually active
+            const currentPL = store.currentTrade.cycleRealizedPL;
+            realizedPlElement.textContent = `$${formatNumber(currentPL, 2)}`;
+            realizedPlElement.className = `card-value ${currentPL.gte(0) ? 'positive' : 'negative'}`;
+            realizedPlPeriodElement.textContent = 'Current cycle';
+            
+            // Show indicator for current cycle
+            realizedPlIndicatorElement.textContent = 'LIVE';
+            realizedPlIndicatorElement.className = 'pl-indicator pl-positive';
+            realizedPlIndicatorElement.style.display = 'inline-block';
+            
+        } else {
+            // Show all-time P/L
+            const allTimePL = calculateAllTimeRealizedPL();
+            realizedPlElement.textContent = `$${formatNumber(allTimePL, 2)}`;
+            realizedPlElement.className = `card-value ${allTimePL.gte(0) ? 'positive' : 'negative'}`;
+            realizedPlPeriodElement.textContent = 'All time';
+            
+            // Hide indicator
+            realizedPlIndicatorElement.style.display = 'none';
+            
+            // Show last cycle result if available
+            if (store.dashboardState.lastCyclePL.abs().gt(0)) {
+                const lastCycleText = store.dashboardState.lastCyclePL.gte(0) ? 
+                    `Last cycle: +$${formatNumber(store.dashboardState.lastCyclePL, 2)}` :
+                    `Last cycle: -$${formatNumber(store.dashboardState.lastCyclePL.abs(), 2)}`;
+                
+                realizedPlPeriodElement.textContent = `All time • ${lastCycleText}`;
+            }
+        }
+    }
+
+    // Calculate all-time realized P/L
+    function calculateAllTimeRealizedPL() {
+        let allTimePL = D(0);
+        
+        store.transactions.forEach(tx => {
+            allTimePL = allTimePL.plus(tx.profitLoss);
+        });
+        
+        return allTimePL;
+    }
+
+    // Update trade status display
+    function updateTradeStatus() {
+        const statusElement = document.getElementById('tradeCycleStatus');
+        const durationElement = document.getElementById('tradeDuration');
+        const completeButton = document.getElementById('completeTrade');
+        const newTradeButton = document.getElementById('newTrade');
+        const tradeStatusDiv = document.getElementById('tradeStatus');
+        
+        if (store.currentTrade.isActive) {
+            statusElement.textContent = 'Active';
+            statusElement.className = 'result-value profit';
+            tradeStatusDiv.className = 'trade-status active';
+            completeButton.style.display = 'block';
+            newTradeButton.style.display = 'none';
+            
+            // Update duration
+            if (store.currentTrade.startTime) {
+                const start = new Date(store.currentTrade.startTime);
+                const now = new Date();
+                const diffMs = now - start;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMins / 60);
+                const days = Math.floor(diffHours / 24);
+                
+                let durationText = '';
+                if (days > 0) durationText += `${days}d `;
+                if (diffHours % 24 > 0) durationText += `${diffHours % 24}h `;
+                durationText += `${diffMins % 60}m`;
+                
+                durationElement.textContent = durationText;
+            }
+        } else {
+            statusElement.textContent = 'No active trade';
+            statusElement.className = 'result-value muted';
+            tradeStatusDiv.className = 'trade-status';
+            durationElement.textContent = '-';
+            completeButton.style.display = 'none';
+            newTradeButton.style.display = 'block';
+        }
+    }
+
+    // Start trade timer
+    function startTradeTimer() {
+        if (tradeTimer) clearInterval(tradeTimer);
+        tradeTimer = setInterval(updateTradeStatus, 60000); // Update every minute
+    }
+
+    // Stop trade timer
+    function stopTradeTimer() {
+        if (tradeTimer) {
+            clearInterval(tradeTimer);
+            tradeTimer = null;
+        }
+    }
+
+    // Update trade cycles list
+    function updateTradeCyclesList() {
+        const listElement = document.getElementById('tradeCyclesList');
+        
+        if (store.tradeCycles.length === 0) {
+            listElement.innerHTML = '<div class="muted">No completed trade cycles yet.</div>';
+            return;
+        }
+        
+        listElement.innerHTML = '';
+        
+        // Show only recent 5 cycles
+        const recentCycles = store.tradeCycles.slice(0, 5);
+        
+        recentCycles.forEach(cycle => {
+            const cycleEl = document.createElement('div');
+            cycleEl.className = 'result-row';
+            cycleEl.style.padding = '0.5rem';
+            cycleEl.style.borderBottom = '1px solid var(--border)';
+            
+            const startDate = new Date(cycle.startTime).toLocaleDateString();
+            const endDate = new Date(cycle.endTime).toLocaleDateString();
+            const plPercent = cycle.originalCapital.gt(0) ? 
+                cycle.realizedPL.div(cycle.originalCapital).times(100) : D(0);
+            
+            cycleEl.innerHTML = `
+                <div style="flex: 1;">
+                    <strong>${startDate} - ${endDate}</strong>
+                    <div class="small muted">${cycle.transactionCount} transactions</div>
+                </div>
+                <div style="text-align: right;">
+                    <div>Capital: $${formatNumber(cycle.originalCapital, 2)}</div>
+                    <div class="small ${cycle.realizedPL.gte(0) ? 'profit' : 'loss'}">
+                        P/L: ${cycle.realizedPL.gte(0) ? '+' : ''}$${formatNumber(cycle.realizedPL, 2)} (${cycle.realizedPL.gte(0) ? '+' : ''}${formatNumber(plPercent, 2)}%)
+                    </div>
+                </div>
+            `;
+            
+            listElement.appendChild(cycleEl);
+        });
+    }
+
+    // Calculate portfolio metrics
+    function calculatePortfolio() {
+        let totalFees = D(0);
+        let allTimeRealizedPL = D(0);
+        let currentHoldings = {};
+        
+        // Track buy queue for FIFO calculation
+        const buyQueue = {
+            BTC: [],
+            ETH: [],
+            SOL: [],
+            USDT: []
+        };
+        
+        // Process transactions in chronological order
+        const sortedTxs = [...store.transactions].sort((a, b) => 
+            new Date(a.date) - new Date(b.date)
+        );
+        
+        sortedTxs.forEach(tx => {
+            const asset = tx.asset;
+            totalFees = totalFees.plus(tx.feeInUSDT);
+            
+            if (tx.type === 'BUY') {
+                // Add to buy queue
+                if (!buyQueue[asset]) buyQueue[asset] = [];
+                buyQueue[asset].push({
+                    amount: tx.amount,
+                    price: tx.price,
+                    date: tx.date
+                });
+                
+            } else if (tx.type === 'SELL') {
+                // FIFO matching for P/L calculation
+                let remainingSell = tx.amount;
+                let totalCostBasis = D(0);
+                
+                while (remainingSell.gt(0) && buyQueue[asset].length > 0) {
+                    const oldestBuy = buyQueue[asset][0];
+                    
+                    if (oldestBuy.amount.lte(remainingSell)) {
+                        // Use entire oldest buy
+                        totalCostBasis = totalCostBasis.plus(oldestBuy.amount.times(oldestBuy.price));
+                        remainingSell = remainingSell.minus(oldestBuy.amount);
+                        buyQueue[asset].shift();
+                    } else {
+                        // Use part of oldest buy
+                        totalCostBasis = totalCostBasis.plus(remainingSell.times(oldestBuy.price));
+                        oldestBuy.amount = oldestBuy.amount.minus(remainingSell);
+                        remainingSell = D(0);
+                    }
+                }
+                
+                // Calculate P/L for this sell
+                const sellValue = tx.amount.times(tx.price);
+                const pl = sellValue.minus(totalCostBasis);
+                allTimeRealizedPL = allTimeRealizedPL.plus(pl);
+                
+                // Update transaction with calculated P/L
+                tx.profitLoss = pl;
+            }
+        });
+        
+        // Calculate current holdings and their values
+        Object.keys(buyQueue).forEach(asset => {
+            let totalAmount = D(0);
+            let totalValue = D(0);
+            
+            buyQueue[asset].forEach(buy => {
+                totalAmount = totalAmount.plus(buy.amount);
+                totalValue = totalValue.plus(buy.amount.times(buy.price));
+            });
+            
+            if (totalAmount.gt(0)) {
+                const currentPrice = priceData[asset] ? D(priceData[asset].price) : D(0);
+                const currentValue = totalAmount.times(currentPrice);
+                const avgPrice = totalValue.div(totalAmount);
+                const unrealizedPL = currentValue.minus(totalValue);
+                
+                currentHoldings[asset] = {
+                    amount: totalAmount,
+                    avgPrice: avgPrice,
+                    currentValue: currentValue,
+                    unrealizedPL: unrealizedPL
+                };
+            }
+        });
+        
+        // Calculate total assets (sum of all holdings at current prices)
+        let totalAssets = D(0);
+        Object.values(currentHoldings).forEach(h => {
+            totalAssets = totalAssets.plus(h.currentValue);
+        });
+        
+        // Calculate current trade metrics
+        const currentTradeCapital = store.currentTrade.originalCapital;
+        
+        // Update UI
+        document.getElementById('portfolioValue').textContent = `$${formatNumber(totalAssets, 2)}`;
+        document.getElementById('portfolioValue').className = `card-value ${totalAssets.gte(0) ? 'positive' : 'negative'}`;
+        
+        // Update realized P/L display - only show current cycle P/L when trade is active
+        updateRealizedPLDisplay();
+        
+        document.getElementById('currentTradeCapital').textContent = `$${formatNumber(currentTradeCapital, 2)}`;
+        
+        // Only show P/L for current trade if there are actual transactions
+        if (store.currentTrade.isActive && store.currentTrade.transactions.length > 0) {
+            const currentTradePL = store.currentTrade.cycleRealizedPL;
+            const currentTradePLPercent = currentTradeCapital.gt(0) ? 
+                currentTradePL.div(currentTradeCapital).times(100) : D(0);
+            
+            document.getElementById('capitalChange').textContent = 
+                `${currentTradePL.gte(0) ? '+' : ''}$${formatNumber(currentTradePL, 2)} (${currentTradePL.gte(0) ? '+' : ''}${formatNumber(currentTradePLPercent, 2)}%)`;
+            document.getElementById('capitalChange').className = `small ${currentTradePL.gte(0) ? 'profit' : 'loss'}`;
+        } else {
+            document.getElementById('capitalChange').textContent = 'No active trade';
+            document.getElementById('capitalChange').className = 'small muted';
+        }
+        
+        document.getElementById('totalFees').textContent = `$${formatNumber(totalFees, 2)}`;
+        
+        // Update holdings list
+        updateHoldingsList(currentHoldings);
+        
+        return {
+            currentHoldings,
+            totalAssets,
+            allTimeRealizedPL,
+            totalFees,
+            currentTradeCapital
+        };
+    }
+
+    // Update holdings list display
+    function updateHoldingsList(holdings) {
+        const holdingsList = document.getElementById('holdingsList');
+        
+        if (Object.keys(holdings).length === 0) {
+            holdingsList.innerHTML = '<div class="muted">No holdings yet. Add transactions to see your portfolio.</div>';
+            return;
+        }
+        
+        holdingsList.innerHTML = '';
+        
+        Object.entries(holdings).forEach(([asset, data]) => {
+            const holdingEl = document.createElement('div');
+            holdingEl.className = 'result-row';
+            holdingEl.style.padding = '0.5rem';
+            holdingEl.style.borderBottom = '1px solid var(--border)';
+            
+            const plPercent = data.avgPrice.gt(0) ? 
+                data.unrealizedPL.div(data.amount.times(data.avgPrice)).times(100) : D(0);
+            
+            holdingEl.innerHTML = `
+                <div style="flex: 1;">
+                    <strong>${asset}</strong>
+                    <div class="small muted">${formatNumber(data.amount, 6)} @ $${formatNumber(data.avgPrice, 2)}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div>$${formatNumber(data.currentValue, 2)}</div>
+                    <div class="small ${data.unrealizedPL.gte(0) ? 'profit' : 'loss'}">
+                        ${data.unrealizedPL.gte(0) ? '+' : ''}$${formatNumber(data.unrealizedPL, 2)} (${data.unrealizedPL.gte(0) ? '+' : ''}${formatNumber(plPercent, 2)}%)
+                    </div>
+                </div>
+            `;
+            
+            holdingsList.appendChild(holdingEl);
+        });
+    }
+
+    // Connect to Bybit WebSocket for real-time data
+    function connectBybitWebSocket() {
+        try {
+            // Create WebSocket connection to Bybit
+            wsConnection = new WebSocket('wss://stream.bybit.com/v5/public/spot');
+            
+            wsConnection.onopen = function() {
+                console.log('Bybit WebSocket connected');
+                document.getElementById('apiStatus').className = 'status-dot';
+                document.getElementById('apiStatusText').textContent = 'Connected to Bybit (Live)';
+                
+                // Subscribe to ticker updates for BTC, ETH, SOL
+                const subscribeMessage = {
+                    op: 'subscribe',
+                    args: [
+                        'tickers.BTCUSDT',
+                        'tickers.ETHUSDT', 
+                        'tickers.SOLUSDT'
+                    ]
+                };
+                
+                wsConnection.send(JSON.stringify(subscribeMessage));
+            };
+            
+            wsConnection.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.topic && data.topic.startsWith('tickers.')) {
+                        const symbol = data.topic.replace('tickers.', '');
+                        const ticker = data.data;
+                        
+                        let asset = '';
+                        if (symbol === 'BTCUSDT') asset = 'BTC';
+                        else if (symbol === 'ETHUSDT') asset = 'ETH';
+                        else if (symbol === 'SOLUSDT') asset = 'SOL';
+                        
+                        if (asset && ticker) {
+                            priceData[asset] = {
+                                price: parseFloat(ticker.lastPrice),
+                                change24h: parseFloat(ticker.price24hPcnt) * 100
+                            };
+                            
+                            updatePriceDisplay();
+                            calculatePortfolio();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error parsing WebSocket message:', error);
+                }
+            };
+            
+            wsConnection.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                document.getElementById('apiStatus').className = 'status-dot error';
+                document.getElementById('apiStatusText').textContent = 'Bybit connection error';
+            };
+            
+            wsConnection.onclose = function() {
+                console.log('WebSocket connection closed');
+                document.getElementById('apiStatus').className = 'status-dot error';
+                document.getElementById('apiStatusText').textContent = 'Bybit disconnected';
+                
+                // Attempt to reconnect after 5 seconds
+                setTimeout(connectBybitWebSocket, 5000);
+            };
+            
+        } catch (error) {
+            console.error('Error connecting to Bybit WebSocket:', error);
+            document.getElementById('apiStatus').className = 'status-dot error';
+            document.getElementById('apiStatusText').textContent = 'Connection failed';
+        }
+    }
+
+    // Update price display
+    function updatePriceDisplay() {
+        // Update BTC
+        const btcPriceEl = document.getElementById('btcPrice');
+        const btcChangeEl = document.getElementById('btcChange');
+        
+        if (priceData.BTC && priceData.BTC.price) {
+            btcPriceEl.textContent = `$${formatNumber(priceData.BTC.price, 2)}`;
+            btcChangeEl.textContent = `(${priceData.BTC.change24h >= 0 ? '+' : ''}${formatNumber(priceData.BTC.change24h, 2)}%)`;
+            btcChangeEl.className = `price-change ${priceData.BTC.change24h >= 0 ? 'positive' : 'negative'}`;
+        }
+        
+        // Update ETH
+        const ethPriceEl = document.getElementById('ethPrice');
+        const ethChangeEl = document.getElementById('ethChange');
+        
+        if (priceData.ETH && priceData.ETH.price) {
+            ethPriceEl.textContent = `$${formatNumber(priceData.ETH.price, 2)}`;
+            ethChangeEl.textContent = `(${priceData.ETH.change24h >= 0 ? '+' : ''}${formatNumber(priceData.ETH.change24h, 2)}%)`;
+            ethChangeEl.className = `price-change ${priceData.ETH.change24h >= 0 ? 'positive' : 'negative'}`;
+        }
+        
+        // Update SOL
+        const solPriceEl = document.getElementById('solPrice');
+        const solChangeEl = document.getElementById('solChange');
+        
+        if (priceData.SOL && priceData.SOL.price) {
+            solPriceEl.textContent = `$${formatNumber(priceData.SOL.price, 2)}`;
+            solChangeEl.textContent = `(${priceData.SOL.change24h >= 0 ? '+' : ''}${formatNumber(priceData.SOL.change24h, 2)}%)`;
+            solChangeEl.className = `price-change ${priceData.SOL.change24h >= 0 ? 'positive' : 'negative'}`;
+        }
+    }
+
+    // Add transaction
+    function addTransaction() {
+        const type = document.getElementById('txType').value;
+        const asset = document.getElementById('txAsset').value;
+        const amount = D(document.getElementById('txAmount').value || 0);
+        const price = D(document.getElementById('txPrice').value || 0);
+        const fee = D(document.getElementById('txFee').value || 0);
+        const feeCurrency = document.getElementById('txFeeCurrency').value;
+        const date = document.getElementById('txDate').value || new Date().toISOString().slice(0, 16);
+        
+        if (amount.lte(0) || price.lte(0)) {
+            showToast('Please enter valid amount and price', 'error');
+            return;
+        }
+        
+        const orderValue = amount.times(price);
+        let feeInUSDT = fee;
+        
+        // Convert fee to USDT if needed
+        if (feeCurrency !== 'USDT') {
+            const feeAssetPrice = priceData[feeCurrency] ? D(priceData[feeCurrency].price) : D(0);
+            feeInUSDT = fee.times(feeAssetPrice);
+        }
+        
+        // Auto-start trade cycle if this is the first transaction and no active trade
+        if (!store.currentTrade.isActive && store.transactions.length === 0) {
+            startNewTrade();
+        }
+        
+        const transaction = {
+            id: uid('tx'),
+            date,
+            type,
+            asset,
+            amount,
+            price,
+            orderValue,
+            fee,
+            feeCurrency,
+            feeInUSDT,
+            profitLoss: D(0), // Will be calculated later
+            tradeCycleId: store.currentTrade.isActive ? 'current' : null
+        };
+        
+        // Add to store
+        store.transactions.push(transaction);
+        
+        // Add to current trade if active
+        if (store.currentTrade.isActive) {
+            store.currentTrade.transactions.push(transaction.id);
+            
+            // Update current trade capital for BUY transactions
+            if (type === 'BUY') {
+                store.currentTrade.originalCapital = store.currentTrade.originalCapital.plus(orderValue);
+            }
+        }
+        
+        saveStore();
+        
+        // Reset form
+        document.getElementById('txAmount').value = '';
+        document.getElementById('txPrice').value = '';
+        document.getElementById('txFee').value = '0';
+        
+        // Update UI
+        renderTransactions();
+        calculatePortfolio();
+        updateTradeStatus();
+        
+        showToast('Transaction added successfully', 'success');
+    }
+
+    // Delete transaction
+    function deleteTransaction(id) {
+        // Remove from current trade if it's part of it
+        if (store.currentTrade.isActive) {
+            const txIndex = store.currentTrade.transactions.indexOf(id);
+            if (txIndex > -1) {
+                store.currentTrade.transactions.splice(txIndex, 1);
+                
+                // Recalculate current trade capital
+                const tx = store.transactions.find(t => t.id === id);
+                if (tx && tx.type === 'BUY') {
+                    store.currentTrade.originalCapital = store.currentTrade.originalCapital.minus(tx.orderValue);
+                }
+            }
+        }
+        
+        store.transactions = store.transactions.filter(tx => tx.id !== id);
+        saveStore();
+        renderTransactions();
+        calculatePortfolio();
+        updateTradeStatus();
+        showToast('Transaction deleted', 'success');
+    }
+
+    // Render transactions table
+    function renderTransactions() {
+        const tbody = document.getElementById('txTableBody');
+        tbody.innerHTML = '';
+        
+        if (store.transactions.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td colspan="10" class="muted" style="text-align: center; padding: 2rem;">No transactions yet</td>`;
+            tbody.appendChild(row);
+            return;
+        }
+        
+        // Sort transactions by date (newest first)
+        const sortedTxs = [...store.transactions].sort((a, b) => 
+            new Date(b.date) - new Date(a.date)
+        );
+        
+        sortedTxs.forEach(tx => {
+            const row = document.createElement('tr');
+            
+            const date = new Date(tx.date);
+            const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Determine trade cycle display
+            let tradeCycleDisplay = '-';
+            if (tx.tradeCycleId === 'current' && store.currentTrade.isActive) {
+                tradeCycleDisplay = 'Current';
+            } else if (tx.tradeCycleId) {
+                // Find the trade cycle
+                const cycle = store.tradeCycles.find(c => c.id === tx.tradeCycleId);
+                if (cycle) {
+                    const startDate = new Date(cycle.startTime).toLocaleDateString();
+                    tradeCycleDisplay = startDate;
+                }
+            }
+            
+            row.innerHTML = `
+                <td>${formattedDate}</td>
+                <td>${tx.type}</td>
+                <td>${tx.asset}</td>
+                <td>${formatNumber(tx.amount, 6)}</td>
+                <td>$${formatNumber(tx.price, 2)}</td>
+                <td>$${formatNumber(tx.orderValue, 2)}</td>
+                <td>${formatNumber(tx.fee, 6)} ${tx.feeCurrency}</td>
+                <td class="${tx.profitLoss.gte(0) ? 'profit' : 'loss'}">${tx.profitLoss.gte(0) ? '+' : ''}$${formatNumber(tx.profitLoss, 2)}</td>
+                <td>${tradeCycleDisplay}</td>
+                <td><button class="danger small" onclick="deleteTransaction('${tx.id}')">❌</button></td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    }
+
+    // Calculate trade
+    function calculateTrade() {
+        const asset = document.getElementById('asset').value;
+        const entryPrice = D(document.getElementById('entryPrice').value || 0);
+        const amount = D(document.getElementById('amount').value || 0);
+        const targetProfit = D(document.getElementById('targetProfit').value || 0);
+        const maxCapitalLoss = D(document.getElementById('maxCapitalLoss').value || 0);
+        
+        if (entryPrice.lte(0) || amount.lte(0) || targetProfit.lte(0) || maxCapitalLoss.lte(0)) {
+            showToast('Please enter valid values for all fields', 'error');
+            return;
+        }
+        
+        const capital = entryPrice.times(amount);
+        const tpPrice = entryPrice.plus(targetProfit.div(amount));
+        const slPrice = entryPrice.minus(maxCapitalLoss.div(amount));
+        
+        const potentialProfit = targetProfit;
+        const potentialLoss = maxCapitalLoss;
+        const capitalIfSL = capital.minus(potentialLoss);
+        
+        const roi = potentialProfit.div(capital).times(100);
+        const rrRatio = potentialProfit.div(potentialLoss);
+        
+        // Update TP/SL results
+        document.getElementById('capitalValue').textContent = `$${formatNumber(capital, 2)}`;
+        document.getElementById('tpPrice').textContent = `$${formatNumber(tpPrice, 2)}`;
+        document.getElementById('slPrice').textContent = `$${formatNumber(slPrice, 2)}`;
+        document.getElementById('potentialProfit').textContent = `+$${formatNumber(potentialProfit, 2)}`;
+        document.getElementById('potentialLoss').textContent = `-$${formatNumber(potentialLoss, 2)}`;
+        document.getElementById('capitalIfSL').textContent = `$${formatNumber(capitalIfSL, 2)}`;
+        document.getElementById('roiValue').textContent = `${formatNumber(roi, 2)}%`;
+        document.getElementById('rrRatio').textContent = `1:${formatNumber(rrRatio, 2)}`;
+        
+        // Check if we're in trailing mode
+        const isTrailingMode = document.getElementById('trailingBtn').classList.contains('active');
+        
+        if (isTrailingMode) {
+            const trailingDistance = D(document.getElementById('trailingDistance').value || 0);
+            
+            if (trailingDistance.lte(0)) {
+                showToast('Please enter a valid trailing distance', 'error');
+                return;
+            }
+            
+            const activationPrice = entryPrice.plus(trailingDistance.div(amount));
+            const trailingStopPrice = activationPrice.minus(trailingDistance.div(amount));
+            
+            const trailingProfit = trailingDistance;
+            const trailingLoss = maxCapitalLoss;
+            const trailingCapitalSL = capital.minus(trailingLoss);
+            const securedProfit = D(0); // This would be calculated during actual trading
+            
+            const trailingROI = trailingProfit.div(capital).times(100);
+            const trailingRR = trailingProfit.div(trailingLoss);
+            
+            // Update trailing results
+            document.getElementById('trailingCapital').textContent = `$${formatNumber(capital, 2)}`;
+            document.getElementById('trailingTP').textContent = `$${formatNumber(tpPrice, 2)}`;
+            document.getElementById('trailingSL').textContent = `$${formatNumber(slPrice, 2)}`;
+            document.getElementById('activationPrice').textContent = `$${formatNumber(activationPrice, 2)}`;
+            document.getElementById('trailingStopPrice').textContent = `$${formatNumber(trailingStopPrice, 2)}`;
+            document.getElementById('trailingProfit').textContent = `+$${formatNumber(trailingProfit, 2)}`;
+            document.getElementById('trailingLoss').textContent = `-$${formatNumber(trailingLoss, 2)}`;
+            document.getElementById('trailingCapitalSL').textContent = `$${formatNumber(trailingCapitalSL, 2)}`;
+            document.getElementById('securedProfit').textContent = `+$${formatNumber(securedProfit, 2)}`;
+            document.getElementById('trailingROI').textContent = `${formatNumber(trailingROI, 2)}%`;
+            document.getElementById('trailingRR').textContent = `1:${formatNumber(trailingRR, 2)}`;
+            
+            document.getElementById('trailingResult').style.display = 'block';
+            document.getElementById('tpSlResult').style.display = 'none';
+        } else {
+            document.getElementById('tpSlResult').style.display = 'block';
+            document.getElementById('trailingResult').style.display = 'none';
+        }
+    }
+
+    // Update tablet mode
+    function updateTabletMode() {
+        if (store.settings.tabletMode) {
+            document.body.classList.add('tablet-mode');
+        } else {
+            document.body.classList.remove('tablet-mode');
+        }
+    }
+
+    // Export data as CSV
+    function exportCsv() {
+        if (store.transactions.length === 0) {
+            showToast('No transactions to export', 'error');
+            return;
+        }
+        
+        const headers = ['Date', 'Type', 'Asset', 'Amount', 'Price', 'Value', 'Fee', 'Fee Currency', 'P/L', 'Trade Cycle'];
+        const csvRows = [headers.join(',')];
+        
+        store.transactions.forEach(tx => {
+            const date = new Date(tx.date).toLocaleString();
+            const row = [
+                date,
+                tx.type,
+                tx.asset,
+                tx.amount.toString(),
+                tx.price.toString(),
+                tx.orderValue.toString(),
+                tx.fee.toString(),
+                tx.feeCurrency,
+                tx.profitLoss.toString(),
+                tx.tradeCycleId || ''
+            ];
+            csvRows.push(row.join(','));
+        });
+        
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `crypto-suite-export-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        showToast('Data exported as CSV', 'success');
+    }
+
+    // Export data as JSON
+    function exportJson() {
+        if (store.transactions.length === 0) {
+            showToast('No data to export', 'error');
+            return;
+        }
+        
+        const dataStr = JSON.stringify(store, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `crypto-suite-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        showToast('Data exported as JSON', 'success');
+    }
+
+    // Import data from JSON
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                // Validate imported data structure
+                if (!importedData.transactions || !Array.isArray(importedData.transactions)) {
+                    throw new Error('Invalid data format');
+                }
+                
+                // Convert string values back to Decimal
+                importedData.transactions = importedData.transactions.map(tx => ({
+                    ...tx,
+                    amount: D(tx.amount),
+                    price: D(tx.price),
+                    orderValue: D(tx.orderValue),
+                    fee: D(tx.fee),
+                    feeInUSDT: D(tx.feeInUSDT || 0),
+                    profitLoss: D(tx.profitLoss || 0)
+                }));
+                
+                store = importedData;
+                saveStore();
+                renderTransactions();
+                calculatePortfolio();
+                updateTradeStatus();
+                updateTradeCyclesList();
+                updateRealizedPLDisplay();
+                
+                showToast('Data imported successfully', 'success');
+            } catch (error) {
+                console.error('Import error:', error);
+                showToast('Failed to import data. Invalid file format.', 'error');
+            }
+        };
+        reader.readAsText(file);
+        
+        // Reset file input
+        event.target.value = '';
+    }
+
+    // Initialize application
+    function init() {
+        // Load stored data
+        loadStore();
+        
+        // Set current date as default for transaction date
+        document.getElementById('txDate').value = new Date().toISOString().slice(0, 16);
+        
+        // Set up event listeners
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const section = this.getAttribute('data-section');
+                
+                // Update active menu item
+                document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show selected section
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(section).classList.add('active');
+                
+                // Close dropdown
+                document.querySelector('.dropdown-menu').classList.remove('show');
+            });
+        });
+        
+        // Hamburger menu toggle
+        document.querySelector('.hamburger-btn').addEventListener('click', function() {
+            document.querySelector('.dropdown-menu').classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const isClickInside = document.querySelector('.hamburger-menu').contains(event.target);
+            if (!isClickInside) {
+                document.querySelector('.dropdown-menu').classList.remove('show');
+            }
+        });
+        
+        // Trade planner mode toggle
+        document.getElementById('tpSlBtn').addEventListener('click', function() {
+            document.getElementById('tpSlBtn').classList.add('active');
+            document.getElementById('trailingBtn').classList.remove('active');
+            document.getElementById('trailingInput').style.display = 'none';
+        });
+        
+        document.getElementById('trailingBtn').addEventListener('click', function() {
+            document.getElementById('trailingBtn').classList.add('active');
+            document.getElementById('tpSlBtn').classList.remove('active');
+            document.getElementById('trailingInput').style.display = 'block';
+        });
+        
+        // Add transaction button
+        document.getElementById('addTransaction').addEventListener('click', addTransaction);
+        
+        // Export buttons
+        document.getElementById('exportCsv').addEventListener('click', exportCsv);
+        document.getElementById('exportJson').addEventListener('click', exportJson);
+        
+        // Import button
+        document.getElementById('importBtn').addEventListener('click', function() {
+            document.getElementById('importFile').click();
+        });
+        document.getElementById('importFile').addEventListener('change', importData);
+        
+        // Reset storage button
+        document.getElementById('resetStore').addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+                localStorage.removeItem(STORAGE_KEY);
+                initializeDefaultStore();
+                renderTransactions();
+                calculatePortfolio();
+                updateTradeStatus();
+                updateTradeCyclesList();
+                updateRealizedPLDisplay();
+                showToast('All data has been reset', 'success');
+            }
+        });
+        
+        // Tablet mode toggle
+        document.getElementById('tabletModeToggle').addEventListener('change', function() {
+            store.settings.tabletMode = this.checked;
+            saveStore();
+            updateTabletMode();
+        });
+        
+        // Backup data button
+        document.getElementById('backupData').addEventListener('click', exportJson);
+        
+        // Clear storage button
+        document.getElementById('clearStorage').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear all storage? This will delete all your data.')) {
+                localStorage.clear();
+                initializeDefaultStore();
+                renderTransactions();
+                calculatePortfolio();
+                updateTradeStatus();
+                updateTradeCyclesList();
+                updateRealizedPLDisplay();
+                showToast('Storage cleared', 'success');
+            }
+        });
+        
+        // Auto-fill current price when asset changes in trade planner
+        document.getElementById('asset').addEventListener('change', function() {
+            const asset = this.value;
+            const entryPriceInput = document.getElementById('entryPrice');
+            
+            if (priceData[asset] && priceData[asset].price) {
+                entryPriceInput.value = priceData[asset].price;
+            }
+        });
+        
+        // Trade cycle buttons
+        document.getElementById('completeTrade').addEventListener('click', completeTrade);
+        document.getElementById('newTrade').addEventListener('click', startNewTrade);
+        
+        // Initial UI setup
+        renderTransactions();
+        calculatePortfolio();
+        updateTabletMode();
+        updateTradeStatus();
+        updateTradeCyclesList();
+        updateRealizedPLDisplay();
+        
+        // Connect to Bybit WebSocket for real-time data
+        connectBybitWebSocket();
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
